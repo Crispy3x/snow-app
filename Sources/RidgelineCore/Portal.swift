@@ -131,6 +131,7 @@ public struct PortalTips: Codable, Equatable, Sendable {
 
     /// Only links that pass the payment-site check are ever sent.
     public static func make(from profile: BusinessProfile) -> PortalTips? {
+        guard profile.tippingIsOn else { return nil }
         let venmo = profile.venmoLink.flatMap(PayLink.clean), paypal = profile.paypalLink.flatMap(PayLink.clean)
         let cash = profile.cashAppLink.flatMap(PayLink.clean)
         return [venmo, paypal, cash].allSatisfy { $0 == nil } ? nil : PortalTips(venmoURL: venmo, paypalURL: paypal, cashappURL: cash)

@@ -37,6 +37,9 @@ public struct BusinessProfile: Equatable, Codable, Sendable {
     public var payLink: String?
     /// The crew's own Venmo, PayPal and Cash App links. Clients reach them from the Tip the crew and Send a coffee buttons on their page.
     /// Stored only if they pass `PayLink.clean`.
+    /// Nil means on. When off, client pages show no tip or coffee buttons.
+    public var tippingEnabled: Bool?
+    public var tippingIsOn: Bool { tippingEnabled ?? true }
     public var venmoLink: String?
     public var paypalLink: String?
     public var cashAppLink: String?

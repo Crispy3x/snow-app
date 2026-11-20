@@ -133,5 +133,9 @@ final class InvoiceEmailAndSeasonTests: XCTestCase {
         let tips = PortalTips.make(from: d.profile)
         XCTAssertEqual(tips?.venmoURL, "https://venmo.com/ridgeplow"); XCTAssertEqual(tips?.cashappURL, "https://cash.app/$ridgeplow")
         XCTAssertNil(tips?.paypalURL)
+        d.profile.tippingEnabled = false
+        XCTAssertNil(PortalTips.make(from: d.profile))                 // switched off: nothing is sent
+        d.profile.tippingEnabled = true
+        XCTAssertNotNil(PortalTips.make(from: d.profile))
     }
 }

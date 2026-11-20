@@ -30,6 +30,20 @@ struct SettingsView: View {
     var body: some View {
         ScreenStack {
             Form {
+                Section("Tipping") {
+                    Toggle("Let clients tip the crew",
+                           isOn: binding({ model.data.profile.tippingIsOn }, { model.data.profile.tippingEnabled = $0 }))
+                    Text("Shows Tip the crew and Send a coffee buttons on client pages. Clients then choose Venmo, PayPal or Cash App. The money goes straight to your crew; this app never handles it.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                    if model.data.profile.tippingIsOn {
+                        SavedProfileLinkField(placeholder: "Crew Venmo link, https://venmo.com/...",
+                                              note: "Leave empty to hide Venmo.", keyPath: \.venmoLink)
+                        SavedProfileLinkField(placeholder: "Crew PayPal link, https://paypal.me/...",
+                                              note: "Leave empty to hide PayPal.", keyPath: \.paypalLink)
+                        SavedProfileLinkField(placeholder: "Crew Cash App link, https://cash.app/$...",
+                                              note: "Leave empty to hide Cash App.", keyPath: \.cashAppLink)
+                    }
+                }
                 Section("Business") {
                     Picker("Appearance", selection: binding({ model.data.profile.appearance ?? "dark" }, { model.data.profile.appearance = $0 })) {
                         Text("Dark").tag("dark")
@@ -76,12 +90,6 @@ struct SettingsView: View {
                               axis: .vertical)
                         .lineLimit(2...4)
                     SavedPayLinkField()
-                    SavedProfileLinkField(placeholder: "Crew Venmo link (optional), https://venmo.com/...",
-                                          note: "Clients tap Tip the crew or Send a coffee on their page and choose Venmo, PayPal or Cash App. Paste your crew's own links.", keyPath: \.venmoLink)
-                    SavedProfileLinkField(placeholder: "Crew PayPal link (optional), https://paypal.me/...",
-                                          note: "Shown on the same page as Venmo and Cash App.", keyPath: \.paypalLink)
-                    SavedProfileLinkField(placeholder: "Crew Cash App link (optional), https://cash.app/$...",
-                                          note: "Shown on the same page as Venmo and PayPal.", keyPath: \.cashAppLink)
                     Toggle("Show the message-clients option on the Storm screen",
                            isOn: binding({ model.data.profile.stormMessagesOn }, { model.data.profile.stormMessagesOn = $0 }))
                     Toggle("Show invoice amounts on client pages",
