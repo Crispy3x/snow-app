@@ -30,6 +30,12 @@ struct SettingsView: View {
     var body: some View {
         ScreenStack {
             Form {
+                if model.data.isOwnerSession {
+                    Section {
+                        NavigationLink { SubscriptionView().circleBack() } label: { Label("Subscription and plan", systemImage: "creditcard") }
+                        NavigationLink { ProfileView().circleBack() } label: { Label("Profile and sign-in", systemImage: "person.crop.circle") }
+                    }
+                }
                 Section("Tipping") {
                     Toggle("Let clients tip the crew",
                            isOn: binding({ model.data.profile.tippingIsOn }, { model.data.profile.tippingEnabled = $0 }))
