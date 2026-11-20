@@ -21,7 +21,7 @@ final class PurchaseStore {
     func start() {
         guard listener == nil else { return }
         listener = Task { [weak self] in
-            for await result in Transaction.updates { await self?.handle(result) }
+            for await result in StoreKit.Transaction.updates { await self?.handle(result) }
         }
         Task { await load(); await refreshEntitlements() }
     }
@@ -68,7 +68,7 @@ final class PurchaseStore {
         }
     }
 
-    private func handle(_ result: VerificationResult<Transaction>) async {
+    private func handle(_ result: VerificationResult<StoreKit.Transaction>) async {
         guard case .verified(let transaction) = result else { return }
         await transaction.finish()
         await refreshEntitlements()
@@ -76,7 +76,7 @@ final class PurchaseStore {
 
     func refreshEntitlements() async {
         var best: PlanTier?
-        for await result in Transaction.currentEntitlements {
+        for await result in StoreKit.Transaction.currentEntitlements {
             guard case .verified(let t) = result, t.revocationDate == nil, let plan = StoreProducts.plan(for: t.productID) else { continue }
             if plan.tier == .max || best == nil { best = plan.tier }
         }
