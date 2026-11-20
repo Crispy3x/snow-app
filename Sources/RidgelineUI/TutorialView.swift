@@ -47,6 +47,8 @@ struct TutorialView: View {
             .background(Look.card, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 28, style: .continuous).stroke(Look.stroke, lineWidth: 1))
             .padding(24)
+            .shadow(color: .black.opacity(0.35), radius: 30, y: 12)
+            .transition(.scale(scale: 0.92).combined(with: .opacity))
         }
         .transition(.opacity)
         .accessibilityAddTraits(.isModal)
