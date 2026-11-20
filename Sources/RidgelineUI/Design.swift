@@ -320,17 +320,17 @@ struct PillNotes: View {
 struct PillMenu<T: Hashable>: View {
     let label: String
     var required = false
-    let options: [(value: T, title: String)]
+    let options: [(T, String)]
     @Binding var selection: T
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 6) { Text(label).font(.title3.weight(.medium)); if required { Text("*").font(.title3) } }
             Menu {
-                ForEach(Array(options.enumerated()), id: \.offset) { _, o in Button(o.title) { selection = o.value } }
+                ForEach(Array(options.enumerated()), id: \.offset) { _, o in Button(o.1) { selection = o.0 } }
             } label: {
                 HStack {
-                    Text(options.first { $0.value == selection }?.title ?? "Choose").font(.title3).foregroundStyle(.primary)
+                    Text(options.first { $0.0 == selection }?.1 ?? "Choose").font(.title3).foregroundStyle(.primary)
                     Spacer()
                     Image(systemName: "chevron.down").foregroundStyle(.secondary)
                 }
