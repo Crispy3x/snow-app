@@ -76,14 +76,12 @@ struct SettingsView: View {
                               axis: .vertical)
                         .lineLimit(2...4)
                     SavedPayLinkField()
-                    SavedProfileLinkField(placeholder: "Tip the driver link (optional), https://...",
-                                          note: "Adds a Tip the driver button on client pages. Use your own Venmo, Cash App, PayPal or Stripe link.", keyPath: \.tipLink)
-                    SavedProfileLinkField(placeholder: "Send a coffee link (optional), https://...",
-                                          note: "Adds a Send a coffee button on client pages. A link with $3 filled in works well.", keyPath: \.coffeeLink)
-                    SavedProfileLinkField(placeholder: "Buy a donut link (optional), https://...",
-                                          note: "Adds a Buy a donut button on client pages.", keyPath: \.donutLink)
-                    SavedProfileLinkField(placeholder: "Buy lunch link (optional), https://...",
-                                          note: "Adds a Buy lunch button on client pages.", keyPath: \.lunchLink)
+                    SavedProfileLinkField(placeholder: "Crew Venmo link (optional), https://venmo.com/...",
+                                          note: "Clients tap Tip the crew or Send a coffee on their page and choose Venmo, PayPal or Cash App. Paste your crew's own links.", keyPath: \.venmoLink)
+                    SavedProfileLinkField(placeholder: "Crew PayPal link (optional), https://paypal.me/...",
+                                          note: "Shown on the same page as Venmo and Cash App.", keyPath: \.paypalLink)
+                    SavedProfileLinkField(placeholder: "Crew Cash App link (optional), https://cash.app/$...",
+                                          note: "Shown on the same page as Venmo and PayPal.", keyPath: \.cashAppLink)
                     Toggle("Show the message-clients option on the Storm screen",
                            isOn: binding({ model.data.profile.stormMessagesOn }, { model.data.profile.stormMessagesOn = $0 }))
                     Toggle("Show invoice amounts on client pages",
