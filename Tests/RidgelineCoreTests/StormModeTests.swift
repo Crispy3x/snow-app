@@ -3,7 +3,7 @@ import XCTest
 
 final class StormModeTests: XCTestCase {
     private let t0 = Date(timeIntervalSince1970: 1_800_000_000)
-    private let name = "Nov 21"
+    private let stormName = "Nov 21"
 
     /// A business with one site per contract, all on the map.
     private func business(_ list: [(trigger: Double, priority: Int, terms: ContractTerms?)]) -> AppData {
@@ -22,7 +22,7 @@ final class StormModeTests: XCTestCase {
     private func visit(_ site: Site, storm: String? = nil, status: VisitStatus = .completed, depth: Double = 4,
                        material: MaterialType? = nil, amount: Double? = nil, salt: Double = 0, at: Date? = nil) -> VisitRecord {
         let start = at ?? t0.addingTimeInterval(1800)
-        return VisitRecord(siteID: site.id, crewMemberName: "Sam", stormID: storm ?? name, arrival: start,
+        return VisitRecord(siteID: site.id, crewMemberName: "Sam", stormID: storm ?? stormName, arrival: start,
                            departure: start.addingTimeInterval(3600), status: status, snowDepthInches: depth,
                            saltPounds: salt, material: material, materialAmount: amount)
     }
@@ -33,10 +33,10 @@ final class StormModeTests: XCTestCase {
 
     func testSuggestsEverySiteWhoseTriggerIsAtOrBelowTheExpectedSnow() {
         let d = business([(3, 3, nil), (1, 2, nil), (2, 1, nil), (4, 1, nil)])
-        let picked = StormMode.suggestedSites(data: d, inches: 2, stormName: name)
+        let picked = StormMode.suggestedSites(data: d, inches: 2, stormName: stormName)
         XCTAssertEqual(picked.map(\.triggerInches), [2, 1])             // most important first
-        XCTAssertEqual(StormMode.suggestedSites(data: d, inches: 0.5, stormName: name).count, 0)
-        XCTAssertEqual(StormMode.suggestedSites(data: d, inches: 4, stormName: name).count, 4)
+        XCTAssertEqual(StormMode.suggestedSites(data: d, inches: 0.5, stormName: stormName).count, 0)
+        XCTAssertEqual(StormMode.suggestedSites(data: d, inches: 4, stormName: stormName).count, 4)
     }
 
     func testAcceptedSkipRequestIsNotSuggested() throws {
@@ -44,7 +44,7 @@ final class StormModeTests: XCTestCase {
         var skip = ServiceRequest(siteID: d.sites[0].id, kind: .skip, createdAt: t0)
         try skip.decide(accept: true, message: "", at: t0)
         d.serviceRequests = [skip]
-        XCTAssertEqual(StormMode.suggestedSites(data: d, inches: 3, stormName: name).map(\.id), [d.sites[1].id])
+        XCTAssertEqual(StormMode.suggestedSites(data: d, inches: 3, stormName: stormName).map(\.id), [d.sites[1].id])
     }
 
     func testPrefillUsesTheForecastRoundedToHalfInches() {
@@ -70,10 +70,10 @@ final class StormModeTests: XCTestCase {
     func testStartMakesTheStormAndOneJobForTodayPerChosenSite() throws {
         var d = business([(1, 3, nil), (2, 2, nil), (6, 3, nil)])
         let chosen = [d.sites[0].id, d.sites[1].id]
-        let run = try d.startStorm(baseName: name, expectedInches: 3, siteIDs: chosen, now: t0)
+        let run = try d.startStorm(baseName: stormName, expectedInches: 3, siteIDs: chosen, now: t0)
 
-        XCTAssertEqual(run.stormName, name)
-        XCTAssertEqual(d.storms.map(\.name), [name])
+        XCTAssertEqual(run.stormName, stormName)
+        XCTAssertEqual(d.storms.map(\.name), [stormName])
         XCTAssertEqual(d.storms[0].forecastInches, 3)
         XCTAssertEqual(run.siteIDs, [d.sites[1].id, d.sites[0].id])     // priority order
         XCTAssertEqual(d.jobs.count, 2)
@@ -88,12 +88,12 @@ final class StormModeTests: XCTestCase {
 
     func testCannotStartWithNoSitesOrWhileAStormIsRunning() throws {
         var d = business([(1, 3, nil)])
-        XCTAssertThrowsError(try d.startStorm(baseName: name, expectedInches: 3, siteIDs: [], now: t0)) {
+        XCTAssertThrowsError(try d.startStorm(baseName: stormName, expectedInches: 3, siteIDs: [], now: t0)) {
             XCTAssertEqual($0 as? StormModeError, .noSitesChosen)
         }
-        XCTAssertThrowsError(try d.startStorm(baseName: name, expectedInches: 3, siteIDs: [UUID()], now: t0))
+        XCTAssertThrowsError(try d.startStorm(baseName: stormName, expectedInches: 3, siteIDs: [UUID()], now: t0))
         XCTAssertTrue(d.storms.isEmpty && d.jobs.isEmpty && d.stormRuns.isEmpty)   // a failed start changes nothing
-        try d.startStorm(baseName: name, expectedInches: 3, siteIDs: [d.sites[0].id], now: t0)
+        try d.startStorm(baseName: stormName, expectedInches: 3, siteIDs: [d.sites[0].id], now: t0)
         XCTAssertThrowsError(try d.startStorm(baseName: "Other", expectedInches: 3, siteIDs: [d.sites[0].id], now: t0)) {
             XCTAssertEqual($0 as? StormModeError, .stormAlreadyActive)
         }
@@ -102,14 +102,14 @@ final class StormModeTests: XCTestCase {
 
     func testStartKeepsAStormAlreadySetUpButNeverReusesAFinishedOne() throws {
         var d = business([(1, 3, nil)])
-        let messaged = StormEvent(name: name, start: t0, forecastInches: 1)
+        let messaged = StormEvent(name: stormName, start: t0, forecastInches: 1)
         d.storms = [messaged]
-        let first = try d.startStorm(baseName: name, expectedInches: 4, siteIDs: [d.sites[0].id], now: t0)
+        let first = try d.startStorm(baseName: stormName, expectedInches: 4, siteIDs: [d.sites[0].id], now: t0)
         XCTAssertEqual(first.stormID, messaged.id)                       // keeps its message log
         XCTAssertEqual(d.storms.count, 1)
         try d.finishStorm(now: t0.addingTimeInterval(7200))
-        let second = try d.startStorm(baseName: name, expectedInches: 4, siteIDs: [d.sites[0].id], now: t0.addingTimeInterval(9000))
-        XCTAssertEqual(second.stormName, "\(name) (2)")
+        let second = try d.startStorm(baseName: stormName, expectedInches: 4, siteIDs: [d.sites[0].id], now: t0.addingTimeInterval(9000))
+        XCTAssertEqual(second.stormName, "\(stormName) (2)")
         XCTAssertNotEqual(second.stormID, messaged.id)
     }
 
@@ -117,7 +117,7 @@ final class StormModeTests: XCTestCase {
 
     func testProgressCountsDoneAndSkippedSites() throws {
         var d = business([(1, 3, nil), (1, 3, nil), (1, 3, nil), (1, 3, nil)])
-        let run = try d.startStorm(baseName: name, expectedInches: 3, siteIDs: d.sites.map(\.id), now: t0)
+        let run = try d.startStorm(baseName: stormName, expectedInches: 3, siteIDs: d.sites.map(\.id), now: t0)
         XCTAssertEqual(StormMode.progress(run: run, data: d).text, "0 of 4 done")
 
         d.visitLog.append(visit(d.sites[0]))
@@ -140,7 +140,7 @@ final class StormModeTests: XCTestCase {
 
     func testACompletedVisitMarksTheStormJobDoneSoItLeavesTheRoute() throws {
         var d = business([(1, 3, nil), (1, 3, nil)])
-        try d.startStorm(baseName: name, expectedInches: 3, siteIDs: d.sites.map(\.id), now: t0)
+        try d.startStorm(baseName: stormName, expectedInches: 3, siteIDs: d.sites.map(\.id), now: t0)
         d.markStormJobDone(after: visit(d.sites[0], status: .skipped(reason: "Car in the way")))
         d.markStormJobDone(after: visit(d.sites[1], storm: "Some other storm"))
         XCTAssertEqual(d.routeStops(on: t0).count, 2)
@@ -153,7 +153,7 @@ final class StormModeTests: XCTestCase {
 
     func testSummaryAddsUpPushesDepthAndMaterial() throws {
         var d = business([(1, 3, nil), (1, 3, nil), (1, 3, nil)])
-        let run = try d.startStorm(baseName: name, expectedInches: 3, siteIDs: d.sites.map(\.id), now: t0)
+        let run = try d.startStorm(baseName: stormName, expectedInches: 3, siteIDs: d.sites.map(\.id), now: t0)
         d.visitLog.append(visit(d.sites[0], depth: 3, material: .rockSalt, amount: 200))
         d.visitLog.append(visit(d.sites[0], depth: 5, material: .rockSalt, amount: 100))
         d.visitLog.append(visit(d.sites[1], depth: 4, material: .liquidBrine, amount: 20))
@@ -169,8 +169,8 @@ final class StormModeTests: XCTestCase {
         XCTAssertEqual(s.deepestInches, 5)
         XCTAssertEqual(s.averageDepthInches ?? 0, 4, accuracy: 0.001)    // 3, 5, 4: zero depth is "not entered"
         XCTAssertEqual(s.saltPounds, 350)
-        XCTAssertEqual(s.materials.map(\.material), [.rockSalt, .liquidBrine])
-        XCTAssertEqual(s.materials.map(\.amount), [300, 20])
+        XCTAssertEqual(s.materials.map { $0.material }, [MaterialType.rockSalt, MaterialType.liquidBrine])
+        XCTAssertEqual(s.materials.map { $0.amount }, [300.0, 20.0])
         XCTAssertEqual(s.materials.last?.text, "Liquid brine: 20 gal")
     }
 
@@ -185,7 +185,7 @@ final class StormModeTests: XCTestCase {
             (1, 3, .timeAndMaterials(hourly: Money(dollars: 110), materialsMarkupPercent: 15)), // 5: one hour
             (1, 3, nil),                                                                        // 6: no contract
         ])
-        try d.startStorm(baseName: name, expectedInches: 3, siteIDs: d.sites.map(\.id), now: t0)
+        try d.startStorm(baseName: stormName, expectedInches: 3, siteIDs: d.sites.map(\.id), now: t0)
         for site in d.sites { d.visitLog.append(visit(site, depth: 5)) }
         d.visitLog.append(visit(d.sites[0], depth: 6))
         d.visitLog.append(visit(d.sites[1], depth: 6))
@@ -204,14 +204,14 @@ final class StormModeTests: XCTestCase {
         XCTAssertNil(billed(3))
         XCTAssertEqual(o.total, Money(dollars: 385))
         XCTAssertTrue(d.invoices.allSatisfy { $0.status(now: t0) == .draft })
-        XCTAssertTrue(d.invoices.allSatisfy { inv in inv.lines.allSatisfy { $0.stormID == self.name } })
+        XCTAssertTrue(d.invoices.allSatisfy { inv in inv.lines.allSatisfy { $0.stormID == self.stormName } })
         XCTAssertEqual(Set(d.invoices.map(\.number)).count, 4)
         XCTAssertEqual(d.stormRuns.last?.invoiceNumbers, o.created)
     }
 
     func testFinishNeverBillsASiteAlreadyInvoicedForThisStorm() throws {
         var d = business([(1, 3, perPush), (1, 3, perPush)])
-        try d.startStorm(baseName: name, expectedInches: 3, siteIDs: d.sites.map(\.id), now: t0)
+        try d.startStorm(baseName: stormName, expectedInches: 3, siteIDs: d.sites.map(\.id), now: t0)
         let first = visit(d.sites[0])
         d.visitLog.append(first)
         XCTAssertNotNil(d.autoInvoice(afterVisit: first, now: t0).invoice)   // drafted automatically after the visit
@@ -228,8 +228,8 @@ final class StormModeTests: XCTestCase {
     func testBillingTheSameStormTwiceMakesNothingNew() {
         var d = business([(1, 3, perPush)])
         d.visitLog.append(visit(d.sites[0]))
-        XCTAssertEqual(d.billStorm(named: name, now: t0).created.count, 1)
-        let again = d.billStorm(named: name, now: t0)
+        XCTAssertEqual(d.billStorm(named: stormName, now: t0).created.count, 1)
+        let again = d.billStorm(named: stormName, now: t0)
         XCTAssertTrue(again.created.isEmpty)
         XCTAssertEqual(again.alreadyInvoiced, [d.sites[0].id])
         XCTAssertEqual(d.invoices.count, 1)
@@ -238,16 +238,16 @@ final class StormModeTests: XCTestCase {
     func testAVoidedInvoiceDoesNotBlockBillingTheStorm() {
         var d = business([(1, 3, perPush)])
         d.visitLog.append(visit(d.sites[0]))
-        d.billStorm(named: name, now: t0)
+        d.billStorm(named: stormName, now: t0)
         d.invoices[0].void()
-        XCTAssertEqual(d.billStorm(named: name, now: t0).created.count, 1)
+        XCTAssertEqual(d.billStorm(named: stormName, now: t0).created.count, 1)
     }
 
     func testHybridCountsPushesFromEarlierStormsTowardTheCap() {
         var d = business([(1, 3, .hybrid(seasonalBase: Money(dollars: 900), includedPushes: 1, overagePerPush: Money(dollars: 85)))])
         d.visitLog.append(visit(d.sites[0], storm: "Nov 2", at: t0.addingTimeInterval(-86_400 * 19)))
         d.visitLog.append(visit(d.sites[0]))
-        let o = d.billStorm(named: name, now: t0)
+        let o = d.billStorm(named: stormName, now: t0)
         XCTAssertEqual(o.total, Money(dollars: 85))
         XCTAssertFalse(d.invoices[0].lines.contains { $0.stormID == nil })   // the seasonal base is never billed here
         XCTAssertFalse(d.invoices[0].lines.contains { $0.stormID == "Nov 2" })   // only this storm
@@ -255,7 +255,7 @@ final class StormModeTests: XCTestCase {
 
     func testFinishEndsTheStormAndLeavesUnvisitedJobsOpen() throws {
         var d = business([(1, 3, perPush), (1, 3, perPush)])
-        try d.startStorm(baseName: name, expectedInches: 3, siteIDs: d.sites.map(\.id), now: t0)
+        try d.startStorm(baseName: stormName, expectedInches: 3, siteIDs: d.sites.map(\.id), now: t0)
         d.visitLog.append(visit(d.sites[0], depth: 7))
         let end = t0.addingTimeInterval(10_000)
         try d.finishStorm(now: end)
@@ -270,7 +270,7 @@ final class StormModeTests: XCTestCase {
 
     func testPreviewShowsTheFinishWithoutChangingAnything() throws {
         var d = business([(1, 3, perPush)])
-        try d.startStorm(baseName: name, expectedInches: 3, siteIDs: d.sites.map(\.id), now: t0)
+        try d.startStorm(baseName: stormName, expectedInches: 3, siteIDs: d.sites.map(\.id), now: t0)
         d.visitLog.append(visit(d.sites[0]))
         let before = d
         let preview = d.previewFinishStorm(now: t0)
@@ -284,10 +284,10 @@ final class StormModeTests: XCTestCase {
 
     func testStormsInProgressAreSavedAndOldFilesStillLoad() throws {
         var d = business([(1, 3, perPush)])
-        try d.startStorm(baseName: name, expectedInches: 3, siteIDs: d.sites.map(\.id), now: t0)
+        try d.startStorm(baseName: stormName, expectedInches: 3, siteIDs: d.sites.map(\.id), now: t0)
         let loaded = try FileStore.decoder.decode(AppData.self, from: FileStore.encoder.encode(d))
         XCTAssertEqual(loaded.stormRuns, d.stormRuns)
-        XCTAssertEqual(loaded.activeStormRun?.stormName, name)
+        XCTAssertEqual(loaded.activeStormRun?.stormName, stormName)
         let old = try FileStore.decoder.decode(AppData.self, from: Data(#"{"companyName":"Old"}"#.utf8))
         XCTAssertTrue(old.stormRuns.isEmpty)
     }
