@@ -9,7 +9,7 @@ export default function RefundPolicyPage() {
     <LegalPage title="Refund Policy" updated="[DATE]">
       <p>[OPERATOR TO DECIDE the numbers in brackets. The structure below is a common starting point.]</p>
 
-      <h2>Subscriptions (Starter and Growth)</h2>
+      <h2>Subscriptions (Starter, Professional and Mentorship)</h2>
       <ul>
         <li>New subscriptions start with a [7]-day free trial. Cancel before it ends and you won&rsquo;t be charged.</li>
         <li>You can cancel any time from the billing page. Cancellation stops future renewals; access continues until the end of the current paid month.</li>
@@ -24,8 +24,8 @@ export default function RefundPolicyPage() {
         <li>Refunded purchases lose course access.</li>
       </ul>
 
-      <h2>Growth plan course access</h2>
-      <p>Course access on Growth lasts while the subscription is active. It ends when the subscription ends unless you bought the course separately.</p>
+      <h2>Course access on Professional and Mentorship</h2>
+      <p>Course access on these plans lasts while the subscription is active. It ends when the subscription ends unless you bought the course separately.</p>
 
       <h2>How to ask</h2>
       <p>Email {BRAND.supportEmail} from your account email with your order details. Approved refunds go back to the original payment method through Stripe, usually within 5 to 10 business days.</p>

@@ -1,4 +1,4 @@
-import { BRAND, PRICING, formatPrice } from "@/config/brand";
+import { BRAND } from "@/config/brand";
 import { AI_TOOLS, COURSE_MODULES, FAQ, FEATURES, HOW_IT_WORKS } from "@/content/marketing";
 import { LinkButton } from "@/components/ui/button";
 import { Badge, Card, Container, Section } from "@/components/ui/layout";
@@ -165,7 +165,7 @@ export function CourseSection() {
       id="course"
       eyebrow="Course"
       title="The selling side, in six modules"
-      intro="Video lessons with downloadable worksheets. Included with Growth, or buy it on its own."
+      intro="Video lessons with downloadable worksheets. Included with the Professional and Mentorship plans."
       className="bg-card border-y border-line"
     >
       <ol className="grid gap-4 md:grid-cols-2">
@@ -187,93 +187,6 @@ export function CourseSection() {
           </li>
         ))}
       </ol>
-    </Section>
-  );
-}
-
-/* ---------- Pricing ---------- */
-
-const PLANS = [
-  {
-    key: "starter",
-    name: "Starter",
-    price: formatPrice(PRICING.starter.monthly),
-    period: "/mo",
-    blurb: "For one store getting its rules in place.",
-    features: ["1 eBay store", "Bulk lister and margin guard", "Price and stock monitor", "Order queue", "Monthly AI credits"],
-    cta: { href: "/signup?plan=starter", label: "Start free trial" },
-    highlight: false,
-  },
-  {
-    key: "growth",
-    name: "Growth",
-    price: formatPrice(PRICING.growth.monthly),
-    period: "/mo",
-    blurb: "For sellers running more than one store, with the course included.",
-    features: [
-      "Multiple eBay stores",
-      "Everything in Starter",
-      "Offers, sale events and promoted listing rules",
-      "Team seats",
-      "More AI credits",
-      "Full course included",
-    ],
-    cta: { href: "/signup?plan=growth", label: "Start free trial" },
-    highlight: true,
-  },
-  {
-    key: "course",
-    name: "Course only",
-    price: formatPrice(PRICING.course.oneTime),
-    period: " one time",
-    blurb: "The six-module video course and resources, without the software.",
-    features: ["All six modules", "Downloadable worksheets", "Lifetime access to purchased content"],
-    cta: { href: "/signup?plan=course", label: "Buy the course" },
-    highlight: false,
-  },
-];
-
-export function Pricing() {
-  return (
-    <Section id="pricing" eyebrow="Pricing" title="Plans" intro="Cancel subscriptions any time from your billing page.">
-      <ul className="grid gap-6 lg:grid-cols-3">
-        {PLANS.map((p) => (
-          <li key={p.key}>
-            <div
-              className={`flex h-full flex-col rounded-lg border bg-card p-6 ${
-                p.highlight ? "border-2 border-accent" : "border-line"
-              }`}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <h3 className="text-xl font-semibold">{p.name}</h3>
-                {p.highlight && <Badge tone="amber">Course included</Badge>}
-              </div>
-              <p className="mt-4">
-                <span className="font-display text-4xl font-semibold">{p.price}</span>
-                <span className="text-ink-muted">{p.period}</span>
-              </p>
-              <p className="mt-2 text-ink-muted">{p.blurb}</p>
-              <ul className="mt-6 flex-1 space-y-3">
-                {p.features.map((f) => (
-                  <li key={f} className="flex gap-2">
-                    <span className="mt-0.5 text-accent">{icons.check}</span>
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-              <LinkButton
-                href={p.cta.href}
-                size="lg"
-                variant={p.highlight ? "primary" : "secondary"}
-                className="mt-8"
-              >
-                {p.cta.label}
-                <span className="sr-only"> on the {p.name} plan</span>
-              </LinkButton>
-            </div>
-          </li>
-        ))}
-      </ul>
     </Section>
   );
 }

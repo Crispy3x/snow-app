@@ -15,17 +15,3 @@ export const BRAND = {
   resultsDisclaimer:
     "Results shown are from specific stores and are not typical. We don't promise sales or income.",
 } as const;
-
-/**
- * Plan prices are placeholders until you set them. Use null to render "[PRICE]".
- * Stripe price IDs come from env vars (see .env.example), not from here.
- */
-export const PRICING = {
-  starter: { monthly: null as number | null },
-  growth: { monthly: null as number | null },
-  course: { oneTime: null as number | null },
-};
-
-export function formatPrice(value: number | null): string {
-  return value === null ? "[PRICE]" : `$${value}`;
-}

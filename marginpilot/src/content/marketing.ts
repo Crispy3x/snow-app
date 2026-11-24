@@ -150,6 +150,6 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Which plan includes the course?",
-    a: "Growth includes the full course. You can also buy the course on its own with a one-time payment.",
+    a: "Professional and Mentorship both include the full video course. Mentorship adds group calls and store reviews.",
   },
 ];

@@ -6,10 +6,10 @@ import {
   FinalCta,
   Hero,
   HowItWorks,
-  Pricing,
   SoftwareFeatures,
 } from "@/components/marketing/sections";
 import { ResultsSection } from "@/components/marketing/results";
+import { Pricing } from "@/components/marketing/pricing";
 
 export default function HomePage() {
   return (

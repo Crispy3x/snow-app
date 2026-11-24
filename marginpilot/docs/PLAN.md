@@ -4,7 +4,7 @@ Brand name and brand copy live in one file: `src/config/brand.ts`.
 
 ## 1. Architecture in one paragraph
 
-Next.js 16 (App Router, Cache Components) on Vercel. Supabase provides Postgres (RLS on every table), auth (email + magic link, optional Google), and storage. Stripe Checkout + Billing for the two subscriptions and the one-time course, the Customer Portal for self-service, and a webhook that is the only writer of billing state. eBay is reached only through official OAuth (authorization-code grant) and REST Sell APIs; tokens are AES-256-GCM encrypted with a key that lives in Vercel env, never in the database. Background work runs in **Inngest**. AI calls go through one server module that meters credits, logs prompts/outputs, maps errors, and returns drafts for approval.
+Next.js 16 (App Router, Cache Components) on Vercel. Supabase provides Postgres (RLS on every table), auth (email + magic link, optional Google), and storage. Stripe Checkout + Billing for the three monthly plans (and an optional one-time course), the Customer Portal for self-service, and a webhook that is the only writer of billing state. eBay is reached only through official OAuth (authorization-code grant) and REST Sell APIs; tokens are AES-256-GCM encrypted with a key that lives in Vercel env, never in the database. Background work runs in **Inngest**. AI calls go through one server module that meters credits, logs prompts/outputs, maps errors, and returns drafts for approval.
 
 ## 2. Background jobs: Inngest (and why)
 
@@ -91,15 +91,20 @@ Planned for Phase 4 (`ebay_notifications` table).
 7. Research assistant, pricing advisor, buyer message assistant, listing audit, store chat
 8. Course area (player, progress, resources, gating, admin ordering)
 
-## 6. Plan limits (initial, editable in `src/config/plans.ts` in Phase 2)
+## 6. Plans, limits and the sale (`src/config/plans.ts`)
 
-| | Starter | Growth | Course only |
+| | Starter | Professional | Mentorship |
 |---|---|---|---|
-| eBay stores | 1 | 5 | 0 |
-| Active listings managed | 500 | 5,000 | 0 |
-| AI credits / month | 300 | 2,000 | 0 |
-| Team seats | 1 | 5 | n/a |
+| Regular price | $94/mo | $494/mo | $994/mo |
+| Black Friday price (50% off) | $47/mo | $247/mo | $497/mo |
+| eBay stores | 1 | 5 | 15 |
+| Active listings managed | 500 | 5,000 | 20,000 |
+| AI credits / month | 300 | 2,000 | 6,000 |
+| Team seats | 1 | 3 | 10 |
 | Course | No | Yes | Yes |
+| Mentorship calls and store reviews | No | No | Yes |
+
+The sale shows from 2026-11-24 to the end of Cyber Monday (2026-12-01 07:59 UTC), then switches off by itself.
 
 ## 7. Database schema
 
@@ -114,7 +119,7 @@ See `supabase/migrations/0001_init.sql`. It was checked by running it on a local
 | Automation | `monitor_proposals`, `orders` (encrypted ship-to + purge date), `order_lines`, `fulfillments`, `watcher_offers`, `promotions`, `cleanup_candidates`, `store_daily_metrics`, `activity_log` (before/after, undo) |
 | AI | `ai_requests` (prompt, output, draft status, tokens, cost, credits), `ai_credit_ledger`, `chat_threads`, `message_drafts` |
 | Proof | `proof_screenshots` (private original, redaction boxes, public copy on approval), `testimonials` (approval requires `permission_given`, enforced by a check constraint) |
-| Course | `course_modules`, `course_lessons`, `course_resources`, `lesson_progress`; `has_course_access()` = course purchase or active Growth plan |
+| Course | `course_modules`, `course_lessons`, `course_resources`, `lesson_progress`; `has_course_access()` = course purchase or active Professional/Mentorship plan |
 | Storage buckets | `proof-originals` (admin), `proof-public` (public, redacted only), `testimonial-uploads`, `course-resources` (signed URLs), `listing-images` (per org) |
 
 ## 8. Accounts and keys you need to create
@@ -122,7 +127,7 @@ See `supabase/migrations/0001_init.sql`. It was checked by running it on a local
 | Service | What to create | Env vars |
 |---|---|---|
 | **Supabase** | A project (choose the region nearest your users). Enable email auth; set the Site URL and redirect URLs to your domain. Run the migration (`supabase db push`). Set yourself `is_admin = true` in `profiles`. | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` |
-| **Stripe** | An account. Products: Starter (monthly), Growth (monthly), Course (one-time). Customer Portal enabled. Webhook endpoint `/api/stripe/webhook` with checkout, subscription, invoice and charge.refunded events. | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_PRICE_*` |
+| **Stripe** | An account. Products: Starter ($94/mo), Professional ($494/mo), Mentorship ($994/mo), a 50%-off coupon for the Black Friday sale, optionally Course (one-time). Customer Portal enabled. Webhook endpoint `/api/stripe/webhook` with checkout, subscription, invoice and charge.refunded events. | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_PRICE_*` |
 | **eBay Developer Program** | Developer account (developer.ebay.com). Sandbox and Production keysets. A RuName with accept/decline URLs pointing at `/api/ebay/callback`. Marketplace account deletion endpoint + verification token. Later: Application Growth Check. Plus a sandbox test seller account. | `EBAY_CLIENT_ID`, `EBAY_CLIENT_SECRET`, `EBAY_DEV_ID`, `EBAY_RU_NAME`, `EBAY_DELETION_*` |
 | **Anthropic** | Console account, API key, spend limit, and the DPA. | `ANTHROPIC_API_KEY` |
 | **Inngest** | Account, app linked to the Vercel project (Vercel integration sets the keys). | `INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY` |

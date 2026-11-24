@@ -11,7 +11,7 @@
 -- ---------------------------------------------------------------------------
 -- Enums
 -- ---------------------------------------------------------------------------
-create type plan_key as enum ('none', 'starter', 'growth');
+create type plan_key as enum ('none', 'starter', 'professional', 'mentorship');
 create type member_role as enum ('owner', 'admin', 'member');
 create type sub_status as enum ('trialing', 'active', 'past_due', 'canceled', 'incomplete', 'incomplete_expired', 'unpaid', 'paused');
 create type store_status as enum ('active', 'needs_reauth', 'disconnected');
@@ -557,7 +557,7 @@ language sql stable security definer set search_path = public as $$
       or exists (
         select 1 from memberships m
         join subscriptions s on s.org_id = m.org_id
-        where m.user_id = p_user and s.plan = 'growth' and s.status in ('active', 'trialing')
+        where m.user_id = p_user and s.plan in ('professional', 'mentorship') and s.status in ('active', 'trialing')
       );
 $$;
 
