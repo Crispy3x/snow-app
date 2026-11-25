@@ -184,6 +184,20 @@ struct MainShell: View {
             guard !tutorialChecked else { return }
             tutorialChecked = true
             if !model.hasSeenTutorial(role) { tutorialRequired = true; showTutorial = true }
+            applyScreenshotMode()
+        }
+    }
+
+    /// Debug builds only: opens the screen named by the `-uiShot` launch argument (see ScreenshotMode.swift).
+    private func applyScreenshotMode() {
+        guard let shot = ScreenshotMode.shot else { return }
+        switch shot {
+        case "menu": menuOpen = true
+        case "assistant": showAssistant = true
+        case "route": showSmartRoute = true
+        case "notifications": showNotifications = true
+        default:
+            if let t = ShellTab(rawValue: shot) { tab = t } else if let s = ShellScreen(rawValue: shot) { screen = s }
         }
     }
 
