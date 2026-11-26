@@ -13,7 +13,9 @@ type SupplierRow = {
   name: string;
   adapter: string;
   wholesale_attested: boolean;
-  config: { row_count?: number; uploaded_at?: string; file_name?: string } | null;
+  row_count: number | null;
+  uploaded_at: string | null;
+  file_name: string | null;
   created_at: string;
   supplier_products: { count: number }[];
 };
@@ -25,10 +27,10 @@ export default async function SuppliersPage() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("suppliers")
-    .select("id, name, adapter, wholesale_attested, config, created_at, supplier_products(count)")
+    .select("id, name, adapter, wholesale_attested, row_count:config->row_count, uploaded_at:config->>uploaded_at, file_name:config->>file_name, created_at, supplier_products(count)")
     .eq("org_id", ctx.org.id)
     .order("created_at");
-  // config.rows can be large; only the summary fields are read below
+  // config.rows can be large, so only summary fields are selected
   const suppliers = (data ?? []) as unknown as SupplierRow[];
 
   return (
@@ -55,8 +57,8 @@ export default async function SuppliersPage() {
                     </div>
                     {s.adapter === "csv_feed" && (
                       <p className="mt-2 text-sm text-ink-muted">
-                        {s.config?.row_count
-                          ? `Price list: ${s.config.row_count.toLocaleString()} rows${s.config.file_name ? ` from ${s.config.file_name}` : ""}, uploaded ${new Date(s.config.uploaded_at ?? s.created_at).toLocaleDateString("en-US", { dateStyle: "medium" })}.`
+                        {s.row_count
+                          ? `Price list: ${Number(s.row_count).toLocaleString()} rows${s.file_name ? ` from ${s.file_name}` : ""}, uploaded ${new Date(s.uploaded_at ?? s.created_at).toLocaleDateString("en-US", { dateStyle: "medium" })}.`
                           : "No price list uploaded yet."}{" "}
                         In bulk add, use links like <code className="rounded bg-paper px-1">csv:SKU123</code> or paste rows.
                       </p>

@@ -13,6 +13,7 @@ export type PlanLimits = {
   seats: number;
   course: boolean;
   mentorship: boolean;
+  listingAudit: boolean;
 };
 
 export type Plan = {
@@ -41,7 +42,7 @@ export const PLANS: Plan[] = [
       "Order queue and tracking",
       "300 AI credits a month",
     ],
-    limits: { stores: 1, listings: 500, aiCreditsPerMonth: 300, seats: 1, course: false, mentorship: false },
+    limits: { stores: 1, listings: 500, aiCreditsPerMonth: 300, seats: 1, course: false, mentorship: false, listingAudit: false },
   },
   {
     key: "professional",
@@ -58,7 +59,7 @@ export const PLANS: Plan[] = [
       "2,000 AI credits a month",
       "Full video course included",
     ],
-    limits: { stores: 5, listings: 5000, aiCreditsPerMonth: 2000, seats: 3, course: true, mentorship: false },
+    limits: { stores: 5, listings: 5000, aiCreditsPerMonth: 2000, seats: 3, course: true, mentorship: false, listingAudit: true },
     highlight: true,
     badge: "Most popular",
   },
@@ -77,7 +78,7 @@ export const PLANS: Plan[] = [
       "10 team seats",
       "6,000 AI credits a month",
     ],
-    limits: { stores: 15, listings: 20000, aiCreditsPerMonth: 6000, seats: 10, course: true, mentorship: true },
+    limits: { stores: 15, listings: 20000, aiCreditsPerMonth: 6000, seats: 10, course: true, mentorship: true, listingAudit: true },
   },
 ];
 

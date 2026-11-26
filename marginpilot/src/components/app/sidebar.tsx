@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { Suspense, useState, type ReactNode } from "react";
 import { icons } from "@/components/ui/icons";
 import type { NavGroup } from "@/content/app-nav";
 
@@ -11,15 +11,8 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(href + "/");
 }
 
-/** Sidebar on desktop; a toggled panel on phones. `footer` holds the store switcher etc. */
-export function Sidebar({ groups, label, footer }: { groups: NavGroup[]; label: string; footer?: ReactNode }) {
-  const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-  // The most specific matching href wins, so /app/listings/new doesn't also light up /app/listings.
-  const all = groups.flatMap((g) => g.items.map((i) => i.href));
-  const active = all.filter((h) => isActive(pathname, h)).sort((a, b) => b.length - a.length)[0];
-
-  const nav = (
+function NavList({ groups, label, active, onNavigate }: { groups: NavGroup[]; label: string; active?: string; onNavigate?: () => void }) {
+  return (
     <nav aria-label={label} className="space-y-6">
       {groups.map((g) => (
         <div key={g.label}>
@@ -29,7 +22,7 @@ export function Sidebar({ groups, label, footer }: { groups: NavGroup[]; label: 
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  onClick={() => setOpen(false)}
+                  onClick={onNavigate}
                   aria-current={item.href === active ? "page" : undefined}
                   className={`block rounded-md px-3 py-2 text-sm ${
                     item.href === active ? "bg-accent-soft font-semibold text-accent-strong" : "text-ink hover:bg-ink/5"
@@ -44,6 +37,30 @@ export function Sidebar({ groups, label, footer }: { groups: NavGroup[]; label: 
       ))}
     </nav>
   );
+}
+
+/** Reads the URL to highlight the current page. Kept behind Suspense so routes can prerender. */
+function ActiveNavList(props: { groups: NavGroup[]; label: string; onNavigate?: () => void }) {
+  const pathname = usePathname();
+  // The most specific matching href wins, so /app/listings/new doesn't also light up /app/listings.
+  const active = props.groups
+    .flatMap((g) => g.items.map((i) => i.href))
+    .filter((h) => isActive(pathname, h))
+    .sort((a, b) => b.length - a.length)[0];
+  return <NavList {...props} active={active} />;
+}
+
+function Nav(props: { groups: NavGroup[]; label: string; onNavigate?: () => void }) {
+  return (
+    <Suspense fallback={<NavList {...props} />}>
+      <ActiveNavList {...props} />
+    </Suspense>
+  );
+}
+
+/** Sidebar on desktop; a toggled panel on phones. `footer` holds the store switcher etc. */
+export function Sidebar({ groups, label, footer }: { groups: NavGroup[]; label: string; footer?: ReactNode }) {
+  const [open, setOpen] = useState(false);
 
   return (
     <>
@@ -58,14 +75,14 @@ export function Sidebar({ groups, label, footer }: { groups: NavGroup[]; label: 
         <span>{open ? "Close menu" : "Menu"}</span>
       </button>
       {open && (
-        <div id="app-mobile-nav" className="fixed inset-x-0 top-14 bottom-0 z-30 overflow-y-auto border-t border-line bg-paper p-4 lg:hidden">
+        <div id="app-mobile-nav" className="fixed inset-x-0 top-14 bottom-0 z-30 overflow-y-auto border-t border-line bg-paper p-4 text-ink lg:hidden">
           {footer && <div className="mb-6">{footer}</div>}
-          {nav}
+          <Nav groups={groups} label={label} onNavigate={() => setOpen(false)} />
         </div>
       )}
-      <aside className="fixed top-14 bottom-0 left-0 hidden w-64 overflow-y-auto border-r border-line bg-card p-4 lg:block">
+      <aside className="fixed top-14 bottom-0 left-0 hidden w-64 overflow-y-auto border-r border-line bg-card p-4 text-ink lg:block">
         {footer && <div className="mb-6">{footer}</div>}
-        {nav}
+        <Nav groups={groups} label={label} />
       </aside>
     </>
   );

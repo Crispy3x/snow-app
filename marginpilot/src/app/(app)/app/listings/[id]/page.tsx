@@ -9,8 +9,17 @@ import { EndButton, ListingEditor, PublishButton } from "./listing-editor";
 
 export const metadata = { title: "Listing" };
 
-export default async function ListingPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ListingPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ price?: string }>;
+}) {
   const { id } = await params;
+  const sp = await searchParams;
+  const suggested = Number(sp.price);
+  const suggestedPrice = Number.isFinite(suggested) && suggested > 0 && suggested < 100000 ? Math.round(suggested * 100) / 100 : null;
   const ctx = await getAppContext();
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
   const listing = await loadListing(id, ctx.org.id);
@@ -58,6 +67,11 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
           </Alert>
         )}
 
+        {suggestedPrice !== null && (
+          <Alert tone="info" title="Suggested price filled in">
+            The pricing advisor suggested ${suggestedPrice.toFixed(2)}. Check the margin below, then save to apply it.
+          </Alert>
+        )}
         <Panel title="Details">
           <ListingEditor
             rules={rules}
@@ -65,7 +79,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
               id: listing.id,
               title: listing.title,
               description: listing.description ?? "",
-              price: Number(listing.price),
+              price: suggestedPrice ?? Number(listing.price),
               quantity: listing.quantity,
               status: listing.status,
               linkedCost: cost ? { cost: cost.supplierCost, shipping: cost.supplierShipping ?? 0 } : null,

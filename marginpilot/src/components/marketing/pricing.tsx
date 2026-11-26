@@ -1,15 +1,8 @@
-import { cacheLife } from "next/cache";
-import { PLANS, SALE, formatUsd, isSaleActive, salePrice } from "@/config/plans";
+import { PLANS, SALE, formatUsd, salePrice } from "@/config/plans";
+import { saleIsOn } from "@/lib/sale";
 import { LinkButton } from "@/components/ui/button";
 import { Badge, Section } from "@/components/ui/layout";
 import { icons } from "@/components/ui/icons";
-
-/** Re-evaluated every few minutes, so the sale price disappears on time without a redeploy. */
-async function saleIsOn() {
-  "use cache";
-  cacheLife("minutes");
-  return isSaleActive(new Date());
-}
 
 const SALE_END_LABEL = new Date(SALE.endsAt).toLocaleString("en-US", {
   month: "long",

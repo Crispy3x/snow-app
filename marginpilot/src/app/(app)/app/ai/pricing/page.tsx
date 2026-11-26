@@ -45,7 +45,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
           <p className="text-sm text-ink-muted">
             Using your store rules: {rules.minNetMarginPct}% margin floor, {rules.finalValueFeePct}% final value fee, {money(rules.perOrderFee)} per order,
             worst-case ad rate {worstCaseAdRate(rules)}%{rules.saleDiscountPct ? `, ${rules.saleDiscountPct}% sale discount` : ""}.{" "}
-            <TextLink href="/app/settings">Edit rules</TextLink>
+            <TextLink href={`/app/stores/${ctx.store.id}/rules`}>Edit rules</TextLink>
           </p>
           <p className="mt-2 text-sm text-ink-muted">
             The advisor never looks up eBay prices. Only the competitor prices you type in are used, and the recommendation is never below your floor price.

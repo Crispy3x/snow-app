@@ -2,6 +2,7 @@
 
 import { randomUUID } from "node:crypto";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import type { ActionState } from "@/components/ui/form";
 import { PROOF_CACHE_TAG } from "@/lib/proof";
@@ -89,7 +90,7 @@ export async function startScreenshotUpload(input: {
 export async function createScreenshot(
   _prev: ActionState,
   formData: FormData,
-): Promise<ActionState & { id?: string }> {
+): Promise<(NonNullable<ActionState> & { id?: string }) | null> {
   const { admin, db } = await adminContext();
   const path = String(formData.get("path") ?? "");
   const parsed = screenshotMetaSchema().safeParse({
@@ -287,6 +288,7 @@ export async function deleteScreenshot(formData: FormData): Promise<void> {
   await removeQuietly(db, BUCKETS.originals, [row.original_path]);
   await audit(db, admin.id, "proof_screenshot_delete", { details: { id: row.id } });
   refreshProof(true);
+  redirect("/admin/proof");
 }
 
 const DIRECTIONS = ["up", "down", "top", "bottom"] as const;

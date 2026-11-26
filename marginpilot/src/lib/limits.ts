@@ -64,12 +64,17 @@ export async function aiCreditBalance(orgId: string): Promise<{ allowance: numbe
     .select("delta")
     .eq("org_id", orgId)
     .eq("period_start", creditPeriodStart());
-  const net = (data ?? []).reduce((s, r) => s + (r.delta as number), 0); // spends are negative, grants positive
-  const used = Math.max(0, -net);
-  return { allowance, used, remaining: allowance + net };
+  // Spends are negative deltas; admin grants are positive and add to this month's allowance.
+  let spent = 0, granted = 0;
+  for (const r of data ?? []) {
+    const d = r.delta as number;
+    if (d < 0) spent -= d;
+    else granted += d;
+  }
+  return { allowance: allowance + granted, used: spent, remaining: allowance + granted - spent };
 }
 
-export async function orgHasFeature(orgId: string, feature: "course" | "mentorship"): Promise<boolean> {
+export async function orgHasFeature(orgId: string, feature: "course" | "mentorship" | "listingAudit"): Promise<boolean> {
   const { plan } = await orgPlan(orgId);
   return !!plan?.limits[feature];
 }

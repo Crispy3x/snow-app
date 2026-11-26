@@ -17,7 +17,7 @@ const MAX_BYTES = 15 * 1024 * 1024;
  */
 export function UploadScreenshotForm({ today }: { today: string }) {
   const router = useRouter();
-  const [state, formAction, pending] = useActionState<ActionState & { id?: string }, FormData>(async (prev, fd) => {
+  const [state, formAction, pending] = useActionState<(NonNullable<ActionState> & { id?: string }) | null, FormData>(async (prev, fd) => {
     const file = fd.get("image");
     if (!(file instanceof File) || file.size === 0) {
       return { ok: false, message: "Choose an image.", fieldErrors: { image: "Choose an image." } };

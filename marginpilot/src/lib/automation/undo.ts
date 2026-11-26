@@ -34,6 +34,7 @@ export type UndoListing = {
 export interface UndoEbay {
   updatePriceQuantity(update: PriceQtyUpdate): Promise<void>;
   publishOffer(offerId: string): Promise<{ listingId: string }>;
+  withdrawOffer(offerId: string): Promise<void>;
   getInventoryItem(sku: string): Promise<InventoryItem>;
   putInventoryItem(sku: string, item: InventoryItem): Promise<void>;
   updateAdBid(campaignId: string, ebayListingId: string, bidPct: number): Promise<void>;
@@ -51,7 +52,7 @@ export type UndoResult =
   | { ok: true; before: Record<string, unknown>; after: Record<string, unknown>; warning?: string }
   | { ok: false; message: string };
 
-export const REVERSIBLE_ACTIONS = ["price_changed", "quantity_set", "listing_ended", "title_changed", "ad_bid_changed"] as const;
+export const REVERSIBLE_ACTIONS = ["price_changed", "quantity_set", "listing_ended", "title_changed", "ad_bid_changed", "listing_published", "listing_edited"] as const;
 
 const NOT_UNDOABLE_REASONS: Record<string, string> = {
   offer_sent: "eBay doesn't allow cancelling an offer that was already sent to buyers.",
@@ -134,6 +135,54 @@ export async function reverseEntry(e: ActivityRow, deps: UndoDeps): Promise<Undo
       await deps.ebay.putInventoryItem(l.sku, item);
       await deps.updateListing(l.id, { title });
       return { ok: true, before: { title: current.product.title }, after: { title } };
+    }
+
+    case "listing_published": {
+      const l = await listingFor(e, deps);
+      const offerId = (typeof e.after?.offer_id === "string" && e.after.offer_id) || l?.ebay_offer_id;
+      if (!l || !offerId) return { ok: false, message: "The listing's eBay offer wasn't found." };
+      if (l.status !== "active") return { ok: false, message: "The listing isn't live any more." };
+      await deps.ebay.withdrawOffer(offerId);
+      await deps.updateListing(l.id, { status: "ended", ended_at: new Date().toISOString() });
+      return { ok: true, before: { status: l.status }, after: { status: "ended" } };
+    }
+
+    case "listing_edited": {
+      const l = await listingFor(e, deps);
+      if (!l) return { ok: false, message: "The listing wasn't found." };
+      const price = num(before.price);
+      const quantity = num(before.quantity);
+      const title = typeof before.title === "string" ? before.title : null;
+      const live = !!l.ebay_offer_id && (l.status === "active" || l.status === "out_of_stock");
+      const warnings: string[] = [];
+      if (live && (price !== null || quantity !== null)) {
+        if (price !== null) {
+          const guard = await deps.checkFloor(l.id, price);
+          if (!guard.ok) warnings.push(`The old price is below the margin floor: ${guard.reasons.join(" ")}`);
+        }
+        await deps.ebay.updatePriceQuantity({
+          sku: l.sku,
+          offerId: l.ebay_offer_id!,
+          ...(price !== null ? { price } : {}),
+          ...(quantity !== null ? { quantity } : {}),
+        });
+      }
+      if (live && title) {
+        const current = await deps.ebay.getInventoryItem(l.sku);
+        await deps.ebay.putInventoryItem(l.sku, { ...current, product: { ...current.product, title } });
+      }
+      const patch: Record<string, unknown> = {};
+      if (price !== null) patch.price = price;
+      if (quantity !== null) patch.quantity = quantity;
+      if (title) patch.title = title;
+      if (!Object.keys(patch).length) return { ok: false, message: "Nothing to restore was recorded." };
+      await deps.updateListing(l.id, patch);
+      return {
+        ok: true,
+        before: { ...(e.after ?? {}) },
+        after: patch,
+        ...(warnings.length ? { warning: `Restored, but ${warnings.join(" ")}` } : {}),
+      };
     }
 
     case "ad_bid_changed": {

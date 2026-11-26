@@ -11,6 +11,9 @@ import type { ActionState } from "@/components/ui/form";
 
 export async function requestAudit(): Promise<ActionState> {
   const ctx = await requireStore();
+  if (!ctx.plan.limits.listingAudit) {
+    return { ok: false, message: "Listing audit is part of the Professional and Mentorship plans. Upgrade on the billing page to use it." };
+  }
   const db = createAdminClient();
 
   const { data: running } = await db

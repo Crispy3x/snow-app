@@ -15,6 +15,7 @@ function mockDeps(over: Partial<UndoDeps> = {}) {
   const ebay = {
     updatePriceQuantity: vi.fn(async () => {}),
     publishOffer: vi.fn(async () => ({ listingId: "EB-NEW" })),
+    withdrawOffer: vi.fn(async () => undefined),
     getInventoryItem: vi.fn(async () => ({
       availability: { shipToLocationAvailability: { quantity: 3 } },
       condition: "NEW" as const,
@@ -130,3 +131,23 @@ describe("undoBlockReason", () => {
     expect(undoBlockReason({ action: "price_changed", undoable: true, undone_at: null, undo_of: null })).toBeNull();
   });
 });
+
+describe("lister actions", () => {
+  it("listing_published withdraws the offer", async () => {
+    const { deps, ebay } = mockDeps({ loadListing: vi.fn(async () => ({ ...listing, status: "active" })) });
+    const r = await reverseEntry(entry({ action: "listing_published", after: { offer_id: "OFF-9" } }), deps);
+    expect(r.ok).toBe(true);
+    expect(ebay.withdrawOffer).toHaveBeenCalledWith("OFF-9");
+    expect(deps.updateListing).toHaveBeenCalledWith("L1", expect.objectContaining({ status: "ended" }));
+  });
+
+  it("listing_edited restores price, quantity and title on a live listing", async () => {
+    const { deps, ebay } = mockDeps({ loadListing: vi.fn(async () => ({ ...listing, status: "active" })) });
+    const r = await reverseEntry(entry({ action: "listing_edited", before: { price: 21, quantity: 4, title: "Old" }, after: { price: 25 } }), deps);
+    expect(r.ok).toBe(true);
+    expect(ebay.updatePriceQuantity).toHaveBeenCalledWith({ sku: "SKU-1", offerId: "OFF-1", price: 21, quantity: 4 });
+    expect(ebay.putInventoryItem).toHaveBeenCalledWith("SKU-1", expect.objectContaining({ product: expect.objectContaining({ title: "Old" }) }));
+    expect(deps.updateListing).toHaveBeenCalledWith("L1", { price: 21, quantity: 4, title: "Old" });
+  });
+});
+

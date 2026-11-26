@@ -3,7 +3,8 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth";
-import { formatUsd, getPlan, isSaleActive, PLANS, SALE, salePrice } from "@/config/plans";
+import { formatUsd, getPlan, PLANS, SALE, salePrice } from "@/config/plans";
+import { saleIsOn } from "@/lib/sale";
 import { safeNext } from "@/lib/account/redirect";
 import { trialDays } from "@/lib/billing/stripe";
 import { AuthCard, FormSkeleton, firstParam, type SearchParams } from "@/components/account/auth-card";
@@ -27,7 +28,7 @@ async function SignupBody({ searchParams }: { searchParams: SearchParams }) {
 
   if (await getUser()) redirect(next || (plan ? `/api/stripe/checkout?plan=${plan.key}` : "/app"));
 
-  const sale = isSaleActive(new Date());
+  const sale = await saleIsOn();
   const days = trialDays();
   const price = (p: (typeof PLANS)[number]) => (sale ? `${formatUsd(salePrice(p.monthly))}/mo (${SALE.name} price)` : `${formatUsd(p.monthly)}/mo`);
   const planOptions = [

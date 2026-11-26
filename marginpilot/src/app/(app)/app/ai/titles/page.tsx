@@ -21,6 +21,8 @@ export default async function TitlesPage({ searchParams }: { searchParams: Promi
     .order("views", { ascending: true })
     .limit(200);
   if (q) query = query.or(`title.ilike.%${q}%,sku.ilike.%${q}%`);
+  const only = typeof sp.listing === "string" && /^[0-9a-f-]{36}$/i.test(sp.listing) ? sp.listing : null;
+  if (only) query = query.eq("id", only);
   const { data } = await query;
   const listings = data ?? [];
 

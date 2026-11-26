@@ -1,7 +1,7 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getEbayClient } from "@/lib/ebay/client";
-import { bulkUpdateAdBids, bulkUpdatePriceQuantity, publishOffer, putInventoryItem } from "@/lib/ebay/api";
+import { bulkUpdateAdBids, bulkUpdatePriceQuantity, publishOffer, putInventoryItem, withdrawOffer } from "@/lib/ebay/api";
 import { getInventoryItem } from "@/lib/ebay/automation-api";
 import { guardPrice } from "@/lib/margin";
 import { logActivity, type ActivityEntry } from "@/lib/activity";
@@ -22,6 +22,9 @@ function depsFor(storeId: string): UndoDeps {
         if (r && r.statusCode >= 300) throw new Error(`eBay rejected the update: ${JSON.stringify(r.errors ?? []).slice(0, 300)}`);
       },
       publishOffer: async (offerId) => publishOffer(await client(), offerId),
+      withdrawOffer: async (offerId) => {
+        await withdrawOffer(await client(), offerId);
+      },
       getInventoryItem: async (sku) => getInventoryItem(await client(), sku),
       putInventoryItem: async (sku, item) => putInventoryItem(await client(), sku, item),
       async updateAdBid(campaignId, ebayListingId, bidPct) {

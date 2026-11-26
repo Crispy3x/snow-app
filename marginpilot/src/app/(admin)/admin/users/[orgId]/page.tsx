@@ -65,6 +65,9 @@ export default async function AdminOrgPage({ params }: { params: Promise<{ orgId
           <>
             Owner {emails.get(org.owner_id) ?? "unknown"} · created {formatDate(org.created_at)}
             {org.stripe_customer_id && <> · Stripe customer {org.stripe_customer_id}</>}
+            <span className="mt-1 block break-all text-sm">
+              Workspace ID <code className="font-mono">{org.id}</code>
+            </span>
           </>
         }
       />

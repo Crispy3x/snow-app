@@ -211,6 +211,15 @@ describe("customer.subscription.*", () => {
     expect(org().stripe_customer_id).toBe("cus_1");
   });
 
+  it("leaves the plan alone while an admin's manual override is on", async () => {
+    org().plan = "mentorship";
+    org().plan_manual_override = true;
+    stripeSubs.sub_1 = sub({}, "price_starter");
+    await send("customer.subscription.created", sub({}, "price_starter"));
+    expect(db.rows("subscriptions")).toHaveLength(1);
+    expect(org().plan).toBe("mentorship");
+  });
+
   it("updated: plan change is applied from the latest Stripe state, not the (stale) payload", async () => {
     stripeSubs.sub_1 = sub({}, "price_mentor");
     await send("customer.subscription.updated", sub({}, "price_starter"));

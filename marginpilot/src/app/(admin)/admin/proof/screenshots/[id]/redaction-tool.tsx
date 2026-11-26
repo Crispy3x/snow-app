@@ -265,7 +265,7 @@ export function RedactionTool({
 
       <div className="flex flex-wrap items-end gap-3">
         <Button variant={drawing ? "primary" : "secondary"} aria-pressed={drawing} onClick={() => setDrawing((d) => !d)}>
-          {drawing ? "Drawing on" : "Drawing off (scroll mode)"}
+          Draw on image{drawing ? ": on" : ": off"}
         </Button>
         <label className="flex min-h-10 items-center gap-2 text-sm">
           <input type="checkbox" className="h-4 w-4 accent-accent" checked={preview} onChange={(e) => setPreview(e.currentTarget.checked)} />

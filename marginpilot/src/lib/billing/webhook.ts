@@ -247,6 +247,9 @@ export async function recomputeOrgPlan(orgId: string, deps: WebhookDeps) {
     if (!PLAN_GRANTING.has(row.status)) continue;
     if (best === "none" || PLAN_RANK[row.plan] > PLAN_RANK[best]) best = row.plan;
   }
+  // An admin's manual plan override (admin area) wins until it's cleared there.
+  const { data: org } = await deps.db.from("organizations").select("plan_manual_override").eq("id", orgId).maybeSingle();
+  if ((org as { plan_manual_override?: boolean } | null)?.plan_manual_override) return;
   check(await deps.db.from("organizations").update({ plan: best }).eq("id", orgId), "set org plan");
 }
 

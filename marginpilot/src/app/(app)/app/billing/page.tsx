@@ -3,7 +3,7 @@ import { aiCreditBalance, usage } from "@/lib/limits";
 import { createClient } from "@/lib/supabase/server";
 import { formatUsd, isSaleActive, PLANS, SALE, salePrice, type PlanKey } from "@/config/plans";
 import { START_ERRORS, type StartErrorCode } from "@/lib/billing/start";
-import { trialDays } from "@/lib/billing/stripe";
+import { coursePriceId, trialDays } from "@/lib/billing/stripe";
 import { Alert, PageHeader, Panel, StatCard } from "@/components/ui/app";
 import { Badge } from "@/components/ui/layout";
 import { Meter } from "@/components/ui/charts";
@@ -78,6 +78,21 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
       />
 
       <div className="space-y-6">
+        {reason === "course" && (
+          <Alert tone="info" title="Get the full course">
+            The video course is included with Professional and Mentorship.
+            {coursePriceId() ? (
+              <>
+                {" "}You can also{" "}
+                <a href="/api/stripe/course-checkout" className="font-semibold text-accent underline">
+                  buy the course on its own
+                </a>
+                .
+              </>
+            ) : null}
+            {sp.error === "checkout_failed" ? " The course checkout couldn't start; please try again." : ""}
+          </Alert>
+        )}
         {reason === "no_plan" && (
           <Alert tone="warning" title="Choose a plan to continue">
             That page needs an active plan. Pick one below{ctx.plan ? "" : " to start"}; you can change or cancel any time.

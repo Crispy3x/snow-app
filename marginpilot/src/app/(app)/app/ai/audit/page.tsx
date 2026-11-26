@@ -37,6 +37,16 @@ function hasActiveRun(runs: { status: string; created_at: string }[], now = Date
 
 export default async function AuditPage({ searchParams }: { searchParams: Promise<{ run?: string; rec?: string }> }) {
   const ctx = await requireStore();
+  if (!ctx.plan.limits.listingAudit) {
+    return (
+      <>
+        <PageHeader title="Listing audit" description="Scan the store and rank listings to fix, reprice or end, with reasons." />
+        <EmptyState title="Listing audit is on Professional and Mentorship" action={<Link href="/app/billing" className="font-semibold text-accent underline">See plans</Link>}>
+          Upgrade to scan every listing and get a ranked list of what to fix, reprice or end.
+        </EmptyState>
+      </>
+    );
+  }
   const sp = await searchParams;
   const filter = RECS.includes(sp.rec as Rec) ? (sp.rec as Rec) : sp.rec === "all" ? "all" : "reviewed";
   const db = createAdminClient();

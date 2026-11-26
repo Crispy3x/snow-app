@@ -2,6 +2,7 @@
 
 import { randomUUID } from "node:crypto";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import type { ActionState } from "@/components/ui/form";
 import { PROOF_CACHE_TAG } from "@/lib/proof";
@@ -223,6 +224,7 @@ export async function deleteTestimonial(formData: FormData): Promise<void> {
   await removeQuietly(db, BUCKETS.uploads, [row.photo_path]);
   await audit(db, admin.id, "proof_testimonial_delete", { details: { id: row.id } });
   refreshProof(true);
+  redirect("/admin/proof/testimonials");
 }
 
 const DIRECTIONS = ["up", "down", "top", "bottom"] as const;
