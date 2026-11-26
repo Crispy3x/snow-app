@@ -295,6 +295,13 @@ public actor TeamCloud: TeamSyncRemote {
         guard (200..<300).contains(status) else { throw Self.functionError(status: status, data: data) }
     }
 
+    /// Deletes this person's cloud login (and, for an owner, the business with all its records and employee logins).
+    public func deleteMe() async throws {
+        let body = Data(#"{"action":"delete_me"}"#.utf8)
+        let (data, status) = try await authorized { self.request("POST", "/functions/v1/team", body: body, bearer: $0) }
+        guard (200..<300).contains(status) else { throw Self.functionError(status: status, data: data) }
+    }
+
     // MARK: records
 
     public func pull(businessID: UUID, after cursor: Int64) async throws -> [SyncRow] {

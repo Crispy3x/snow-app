@@ -460,15 +460,18 @@ extension AppModel {
         }
     }
 
-    /// Deleting the account and data on this phone (AppModel.deleteAccountAndData): signs out of team sync and forgets the
-    /// sign-in. The business and everyone else's records in the cloud are left alone, so a crew member's phone never
-    /// deletes the business.
+    /// Deleting the account and data on this phone (AppModel.deleteAccountAndData) also deletes the cloud login, as the
+    /// App Store requires. For the owner that removes the business, its records and every employee login; for a crew
+    /// member only their own login goes, never the business.
     func teamSyncForget() {
         teamSyncRuntime.debounce?.cancel()
         teamSyncRuntime.signedIn = false
-        let cloud = teamSyncRuntime.cloud
-        Self.storeTeamCloudSession(nil)
-        Task { await cloud?.signOut() }
+        let cloud = teamSyncRuntime.cloud ?? teamCloud()
+        Task {
+            try? await cloud?.deleteMe()
+            await cloud?.signOut()
+            Self.storeTeamCloudSession(nil)
+        }
     }
 }
 

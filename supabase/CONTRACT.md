@@ -82,6 +82,8 @@ Body `{action, business_id, ...}`; caller must be the owner or have manageTeam i
 - `reset_password`: `{username, password}`.
 - `set_access`: `{username, role, permissions, disabled}`.
 - `remove`: `{username}` -> deletes the auth user (cascade removes the members row).
+- `delete_me`: `{}` (no business_id) -> deletes the caller's own login; for an owner also their business, all its records,
+  photos and every employee login. Used by Delete account (App Store rule 5.1.1(v)).
 Responses: `200 {ok:true}` or `4xx/5xx {error:"plain sentence"}`. Passwords: at least 8 characters.
 
 ## Round 1 scope in the app

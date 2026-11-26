@@ -250,6 +250,23 @@ async function remove(
   await admin.from("members").delete().eq("business_id", businessId).eq("user_id", target.user_id);
 }
 
+async function deleteMe(callerId: string) {
+  const { data: owned, error } = await admin.from("businesses").select("id").eq("owner_id", callerId);
+  if (error) throw new HttpError(500, "Could not delete the account. Please try again.");
+  for (const b of owned ?? []) {
+    const { data: crew } = await admin.from("members").select("user_id").eq("business_id", b.id).neq("user_id", callerId);
+    for (const m of crew ?? []) await admin.auth.admin.deleteUser(m.user_id);        // employee logins of this business
+    const { data: files } = await admin.storage.from("photos").list(b.id, { limit: 1000 });
+    if (files && files.length > 0) await admin.storage.from("photos").remove(files.map((f) => `${b.id}/${f.name}`));
+    await admin.from("businesses").delete().eq("id", b.id);                           // records and members cascade
+  }
+  const { error: delErr } = await admin.auth.admin.deleteUser(callerId);
+  if (delErr && delErr.status !== 404) {
+    console.error("deleteUser failed", delErr);
+    throw new HttpError(500, "Could not delete the account. Please try again.");
+  }
+}
+
 // ---------- entry point ----------
 
 Deno.serve(async (req: Request) => {
@@ -268,6 +285,12 @@ Deno.serve(async (req: Request) => {
 
     const callerId = await callerUserId(req);
     const action = typeof body.action === "string" ? body.action : "";
+    // Delete my account (App Store rule 5.1.1(v)): any signed-in person may delete their own login. An owner's
+    // business, with every record and every employee login in it, goes too. Needs no business_id.
+    if (action === "delete_me") {
+      await deleteMe(callerId);
+      return reply(200, { ok: true });
+    }
     if (!["create", "reset_password", "set_access", "remove"].includes(action)) {
       throw new HttpError(400, "Unknown action. Use create, reset_password, set_access or remove.");
     }
