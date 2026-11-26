@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { PlanKey } from "@/config/plans";
+import { recordReferralConversion, voidReferralOnRefund, type ReferralCharge, type ReferralInvoice } from "@/lib/referrals/webhook";
 
 /**
  * Stripe webhook handler: the only writer of billing state.
@@ -26,6 +27,8 @@ export type WebhookDeps = {
   webhookSecret: string;
   planForPrice: (priceId: string | null | undefined) => PlanKey | null;
   now?: () => Date;
+  /** Referral commission % of the first paid invoice; defaults to REFERRAL_COMMISSION_PCT (30). */
+  referralCommissionPct?: number;
 };
 
 export type WebhookResult = { status: number; body: { received?: boolean; duplicate?: boolean; ignored?: boolean; error?: string } };
@@ -139,7 +142,13 @@ async function dispatch(event: StripeEventLike, deps: WebhookDeps): Promise<bool
     case "invoice.payment_failed":
       await onPaymentFailed(obj as InvoiceLike, deps);
       return true;
+    case "invoice.paid":
+    case "invoice.payment_succeeded":
+      // Referral conversion on the first paid invoice (plan state itself comes from customer.subscription.*).
+      await recordReferralConversion(obj as ReferralInvoice, { db: deps.db, now: deps.now, commissionPct: deps.referralCommissionPct });
+      return true;
     case "charge.refunded":
+      await voidReferralOnRefund(obj as ReferralCharge, { db: deps.db, now: deps.now });
       await onChargeRefunded(obj as ChargeLike, deps);
       return true;
     default:

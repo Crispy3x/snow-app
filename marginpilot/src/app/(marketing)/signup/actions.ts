@@ -8,6 +8,7 @@ import { safeNext } from "@/lib/account/redirect";
 import { appUrl } from "@/lib/account/url";
 import { fieldErrorsFrom, type AuthState } from "@/lib/account/auth-state";
 import { createSubscriptionCheckout } from "@/lib/billing/checkout";
+import { attachSignupReferral } from "@/lib/referrals/signup";
 
 const schema = z.object({
   fullName: z.string().trim().min(1, "Enter your name.").max(120, "Use 120 characters or fewer."),
@@ -66,6 +67,9 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
   if (data.user && data.user.identities && data.user.identities.length === 0) {
     return { ok: false, email, code: "exists", message: "An account with this email already exists. Log in instead." };
   }
+
+  // Referral from the mp_ref cookie (set by proxy.ts from ?ref=). Never blocks sign-up.
+  if (data.user) await attachSignupReferral({ userId: data.user.id, email: data.user.email ?? parsed.data.email, fullName });
 
   if (!data.session || !data.user) {
     return {

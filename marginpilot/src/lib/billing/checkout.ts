@@ -3,6 +3,7 @@ import type Stripe from "stripe";
 import { isSaleActive, type PlanKey } from "@/config/plans";
 import { appUrl } from "@/lib/account/url";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { referralCodeForOrg } from "@/lib/referrals/server";
 import { coursePriceId, getStripe, priceIdForPlan, saleCouponId, trialDays } from "./stripe";
 
 /**
@@ -75,9 +76,12 @@ export function buildSubscriptionCheckoutParams(input: {
   trialDays: number;
   saleCoupon: string | undefined;
   now: Date;
+  /** Referral code the workspace signed up with (src/lib/referrals); carried on the session and subscription. */
+  referralCode?: string;
 }): Stripe.Checkout.SessionCreateParams {
   const sale = isSaleActive(input.now) && !!input.saleCoupon;
-  const meta = { org_id: input.orgId, plan: input.plan, user_id: input.userId, sale: sale ? "true" : "false" };
+  const meta: Record<string, string> = { org_id: input.orgId, plan: input.plan, user_id: input.userId, sale: sale ? "true" : "false" };
+  if (input.referralCode) meta.referral_code = input.referralCode;
   return {
     mode: "subscription",
     customer: input.customerId,
@@ -99,6 +103,7 @@ export function buildSubscriptionCheckoutParams(input: {
 export async function createSubscriptionCheckout(orgId: string, plan: PlanKey, user: BillingUser): Promise<string> {
   const priceId = priceIdForPlan(plan);
   const customerId = await ensureStripeCustomer(orgId, user);
+  const referralCode = await referralCodeForOrg(createAdminClient(), orgId).catch(() => undefined);
   const params = buildSubscriptionCheckoutParams({
     orgId,
     plan,
@@ -109,6 +114,7 @@ export async function createSubscriptionCheckout(orgId: string, plan: PlanKey, u
     trialDays: (await hadSubscription(orgId)) ? 0 : trialDays(),
     saleCoupon: saleCouponId(),
     now: new Date(),
+    referralCode,
   });
   if (isSaleActive(new Date()) && !saleCouponId()) {
     console.warn("[billing] Sale is active but STRIPE_COUPON_SALE is not set; checkout created without the discount");
