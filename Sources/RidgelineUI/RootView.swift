@@ -52,6 +52,7 @@ public struct RidgelineRootView: View {
         }
         .environment(model)
         .localReminders(model)
+        .teamSync(model)                                     // AppModel+TeamSync.swift: does nothing when team sync is off
         .tint(Theme.accent(model.data.profile.accentColor))
         .buttonBorderShape(.capsule)                         // the few system-style buttons match the app's rounded look
         .preferredColorScheme(colorScheme)

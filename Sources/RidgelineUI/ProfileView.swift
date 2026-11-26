@@ -41,8 +41,10 @@ struct ProfileView: View {
                 }
                 CardGroup(title: "How you sign in",
                           footer: "Your boss made your username and password. Forgot the password? Ask your boss to set a new one.") {
-                    FactRow(label: "Username", value: model.data.username(forMember: me.id) ?? "None")
+                    FactRow(label: "Username", value: model.data.username(forMember: me.id)
+                            ?? model.data.teamSync.flatMap { $0.isOwner ? nil : $0.login } ?? "None")
                 }
+                EmployeeTeamSyncCard()        // TeamSyncViews.swift
             } else {
                 EmptyCard(icon: "person.crop.circle.badge.xmark", title: "Not on the team",
                           message: "Sign out, then ask your boss to add you again.")
