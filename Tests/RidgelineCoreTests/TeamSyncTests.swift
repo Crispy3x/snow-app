@@ -87,7 +87,7 @@ final class TeamSyncTests: XCTestCase {
         XCTAssertEqual(server.row(.site, site.id)?.customerID, customer.id)
         // Pay never goes in the member row that every employee can read.
         XCTAssertNil(server.row(.member, dana.id)?.data["hourlyRate"])
-        XCTAssertEqual(server.row(.memberPay, dana.id)?.data["hourlyRate"]?["cents"], .int(2200))
+        XCTAssertEqual(server.row(.memberPay, dana.id)?.data["hourlyRate"]?["cents"], .number(2200))
 
         var other = linked()
         try await TeamSync.syncOnce(&other, remote: server, now: t0)
