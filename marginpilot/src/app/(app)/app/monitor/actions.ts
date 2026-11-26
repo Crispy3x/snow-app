@@ -10,7 +10,7 @@ import type { ActionState } from "@/components/ui/form";
 
 const uuid = z.string().uuid();
 
-export async function runCheckNow(_prev: ActionState): Promise<ActionState> {
+export async function runCheckNow(): Promise<ActionState> {
   const ctx = await requireStore();
   await inngest.send({ name: EVENTS.monitorStore, data: { storeId: ctx.store.id } });
   return { ok: true, message: "Check started. New proposals appear here in a few minutes." };

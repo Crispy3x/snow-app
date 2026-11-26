@@ -16,7 +16,7 @@ export default async function ConversationPage({
   searchParams: Promise<{ ref?: string }>;
 }) {
   const ctx = await requireStore();
-  const conversationId = decodeURIComponent((await params).conversationId).slice(0, 200);
+  const conversationId = safeDecode((await params).conversationId).slice(0, 200);
   const ref = (await searchParams).ref;
   const referenceId = ref && /^[\w-]{1,64}$/.test(ref) ? ref : "";
 
@@ -104,4 +104,12 @@ export default async function ConversationPage({
       )}
     </>
   );
+}
+
+function safeDecode(s: string) {
+  try {
+    return decodeURIComponent(s);
+  } catch {
+    return s;
+  }
 }

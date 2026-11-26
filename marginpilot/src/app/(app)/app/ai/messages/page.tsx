@@ -31,15 +31,17 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
     }
   }
 
-  const db = createAdminClient();
-  const { data: drafts } = await db
-    .from("message_drafts")
-    .select("ebay_conversation_id, status")
-    .eq("org_id", ctx.org.id)
-    .eq("store_id", ctx.store.id)
-    .eq("status", "draft")
-    .in("ebay_conversation_id", conversations.map((c) => c.conversationId).slice(0, 100));
-  const withDraft = new Set((drafts ?? []).map((d) => d.ebay_conversation_id as string));
+  let withDraft = new Set<string>();
+  if (conversations.length) {
+    const { data: drafts } = await createAdminClient()
+      .from("message_drafts")
+      .select("ebay_conversation_id")
+      .eq("org_id", ctx.org.id)
+      .eq("store_id", ctx.store.id)
+      .eq("status", "draft")
+      .in("ebay_conversation_id", conversations.map((c) => c.conversationId));
+    withDraft = new Set((drafts ?? []).map((d) => d.ebay_conversation_id as string));
+  }
 
   return (
     <>

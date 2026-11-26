@@ -24,7 +24,7 @@ export type WriterDraft = {
   cost: number | null;
   shipping: number | null;
   stock: number | null;
-  source: { supplierId: string; product: SupplierProduct } | null;
+  source: { supplierId: string; ref: string; product: SupplierProduct } | null;
 };
 
 export type WriterState = { ok?: boolean; message?: string; draft?: WriterDraft; saved?: { listingId: string } } | null;
@@ -58,7 +58,7 @@ export async function generateDraft(_prev: WriterState, formData: FormData): Pro
     } catch (e) {
       return { ok: false, message: e instanceof SupplierError ? e.message : "Couldn't read that product from the supplier." };
     }
-    source = { supplierId: supplier.id, product };
+    source = { supplierId: supplier.id, ref: input, product };
   } else if (/https?:\/\/\S+/i.test(input) && resolveFails(input)) {
     return { ok: false, message: "The text contains a retail store or marketplace link. eBay only allows drop shipping from wholesale suppliers." };
   }

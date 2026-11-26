@@ -66,7 +66,7 @@ export async function saveBidStrategy(_prev: ActionState, formData: FormData): P
   return { ok: true, message: "Saved. Apply bids to update eBay." };
 }
 
-export async function applyBids(_prev: ActionState): Promise<ActionState> {
+export async function applyBids(): Promise<ActionState> {
   const ctx = await requireStore();
   if (!canManage(ctx.role)) return { ok: false, message: "Only owners and admins can change ad bids." };
   const r = await applyTierBids({ orgId: ctx.org.id, userId: ctx.user.id, storeId: ctx.store.id });

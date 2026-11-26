@@ -9,7 +9,7 @@ import { postTracking } from "@/lib/automation/orders-sync";
 import { CARRIERS, isValidTracking } from "@/lib/automation/orders";
 import type { ActionState } from "@/components/ui/form";
 
-export async function syncOrdersNow(_prev: ActionState): Promise<ActionState> {
+export async function syncOrdersNow(): Promise<ActionState> {
   const ctx = await requireStore();
   await inngest.send({ name: EVENTS.ordersSync, data: { storeId: ctx.store.id } });
   return { ok: true, message: "Sync started. New orders appear here in a minute." };
