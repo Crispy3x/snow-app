@@ -127,7 +127,7 @@ struct WelcomeFlowView: View {
             }
             .pickerStyle(.segmented)
             Text(answers.invoiceAutomation.explanation).font(.footnote).foregroundStyle(.secondary)
-            Text("Messages need a server and clients who agreed to them. You set those up in Settings.").font(.footnote).foregroundStyle(.secondary)
+            Text("Messages only go to clients who agreed to them, and need a one-time setup under Advanced in Settings. Until then nothing is sent.").font(.footnote).foregroundStyle(.secondary)
         case .branding:
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 52))], spacing: 14) {
                 ForEach(AppData.accentColors, id: \.self) { name in
@@ -146,6 +146,9 @@ struct WelcomeFlowView: View {
         HStack {
             if step >= 0 {
                 Button("Back") { step -= 1; problem = nil }.buttonStyle(.bordered)
+            } else {
+                // Tapped "I own the business" by mistake: back to the first screen without answering the questions.
+                Button("Not the owner?") { model.signOutOfApp() }.buttonStyle(.borderless)
             }
             Spacer()
             if step >= 0 && !steps[step].required {
@@ -174,11 +177,20 @@ struct WelcomeFlowView: View {
             problem = "Enter your business name to continue."
             return
         }
+        // A link that fails the check is thrown away when the answers are saved, so say so here and not never.
+        if steps[step].id == .payment && PayLink.problem(for: answers.payLink) != nil {
+            problem = "Fix the payment link, or clear it, to continue."
+            return
+        }
+        let answered = steps[step].id
+        answers.skippedSteps.removeAll { $0 == answered }           // answered after all (came back to it)
         if step == steps.count - 1 { finish() } else { step += 1 }
     }
 
     private func skip() {
-        answers.skippedSteps.append(steps[step].id)
+        problem = nil
+        if steps[step].id == .payment && PayLink.problem(for: answers.payLink) != nil { answers.payLink = "" }
+        if !answers.skippedSteps.contains(steps[step].id) { answers.skippedSteps.append(steps[step].id) }
         if step == steps.count - 1 { finish() } else { step += 1 }
     }
 

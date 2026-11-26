@@ -53,6 +53,7 @@ public struct RidgelineRootView: View {
         .environment(model)
         .localReminders(model)
         .tint(Theme.accent(model.data.profile.accentColor))
+        .buttonBorderShape(.capsule)                         // the few system-style buttons match the app's rounded look
         .preferredColorScheme(colorScheme)
         .task { await model.checkAppleCredential() }
         #if canImport(StoreKit)
