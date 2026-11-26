@@ -442,7 +442,9 @@ public enum TeamSync {
             let local = localItem?.fingerprint
             let synced = state.fingerprints[key]
             // A change made here and not pushed yet wins, if this login may push it. Otherwise the remote row wins.
-            let unpushedEdit = local != nil && local != synced
+            // A person who just arrived in this same batch has an empty pay item here; that is not an edit of ours.
+            let emptyNewPay = kind == .memberPay && synced == nil && data.team.first(where: { $0.id == row.id })?.hourlyRate == nil
+            let unpushedEdit = local != nil && local != synced && !emptyNewPay
             let unpushedDelete = local == nil && state.tombstones[key] != nil
             if (unpushedEdit || unpushedDelete) && kind != .visit
                 && writer.mayWrite(kind, assignees: localItem?.assignees ?? [], existing: synced != nil, deleting: unpushedDelete) {
