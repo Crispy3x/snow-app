@@ -14,13 +14,16 @@ export type PlanLimits = {
   course: boolean;
   mentorship: boolean;
   listingAudit: boolean;
+  supplierDirectory: boolean;
 };
 
 export type Plan = {
   key: PlanKey;
   name: string;
-  /** Regular monthly price in USD. */
+  /** Regular monthly price in USD (what Stripe charges before any sale coupon). */
   monthly: number;
+  /** Crossed-out "compare at" price shown next to the price people pay. */
+  compareAt: number;
   blurb: string;
   features: string[];
   limits: PlanLimits;
@@ -33,6 +36,7 @@ export const PLANS: Plan[] = [
     key: "starter",
     name: "Starter",
     monthly: 94,
+    compareAt: 197,
     blurb: "For one store getting its rules in place.",
     features: [
       "1 eBay store",
@@ -40,14 +44,16 @@ export const PLANS: Plan[] = [
       "Bulk AI lister and margin guard",
       "Price and stock monitor",
       "Order queue and tracking",
+      "Photo-to-listing and background studio",
       "300 AI credits a month",
     ],
-    limits: { stores: 1, listings: 500, aiCreditsPerMonth: 300, seats: 1, course: false, mentorship: false, listingAudit: false },
+    limits: { stores: 1, listings: 500, aiCreditsPerMonth: 300, seats: 1, course: false, mentorship: false, listingAudit: false, supplierDirectory: false },
   },
   {
     key: "professional",
     name: "Professional",
     monthly: 494,
+    compareAt: 697,
     blurb: "For sellers running several stores, with the full course included.",
     features: [
       "Up to 5 eBay stores",
@@ -55,11 +61,12 @@ export const PLANS: Plan[] = [
       "Everything in Starter",
       "Offers, sale events and promoted listing rules",
       "Store cleanup and listing audit",
+      "Vetted wholesale supplier directory",
       "3 team seats",
       "2,000 AI credits a month",
       "Full video course included",
     ],
-    limits: { stores: 5, listings: 5000, aiCreditsPerMonth: 2000, seats: 3, course: true, mentorship: false, listingAudit: true },
+    limits: { stores: 5, listings: 5000, aiCreditsPerMonth: 2000, seats: 3, course: true, mentorship: false, listingAudit: true, supplierDirectory: true },
     highlight: true,
     badge: "Most popular",
   },
@@ -67,6 +74,7 @@ export const PLANS: Plan[] = [
     key: "mentorship",
     name: "Mentorship",
     monthly: 994,
+    compareAt: 1497,
     blurb: "Everything in Professional, plus direct guidance while you scale.",
     features: [
       "Up to 15 eBay stores",
@@ -74,11 +82,12 @@ export const PLANS: Plan[] = [
       "Everything in Professional",
       "Weekly mentorship calls",
       "Weekly store audit with written feedback",
+      "Mentorship hub with call recordings",
       "Priority support",
       "10 team seats",
       "6,000 AI credits a month",
     ],
-    limits: { stores: 15, listings: 20000, aiCreditsPerMonth: 6000, seats: 10, course: true, mentorship: true, listingAudit: true },
+    limits: { stores: 15, listings: 20000, aiCreditsPerMonth: 6000, seats: 10, course: true, mentorship: true, listingAudit: true, supplierDirectory: true },
   },
 ];
 
@@ -108,6 +117,11 @@ export function salePrice(regular: number, percentOff = SALE.percentOff): number
 
 export function formatUsd(value: number): string {
   return Number.isInteger(value) ? `$${value}` : `$${value.toFixed(2)}`;
+}
+
+/** Percent saved versus the crossed-out price, rounded down. */
+export function savingsPct(pays: number, compareAt: number): number {
+  return compareAt > pays ? Math.floor(((compareAt - pays) / compareAt) * 100) : 0;
 }
 
 export function getPlan(key: string): Plan | undefined {

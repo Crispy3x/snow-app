@@ -9,6 +9,8 @@ async function CopyrightYear() {
   return <>{new Date().getFullYear()}</>;
 }
 
+const TOOLS = [{ href: "/tools/profit-calculator", label: "Free eBay profit calculator" }];
+
 const LEGAL = [
   { href: "/terms", label: "Terms" },
   { href: "/privacy", label: "Privacy" },
@@ -31,7 +33,7 @@ export function SiteFooter() {
         <nav aria-label="Product">
           <h2 className="text-sm font-semibold">Product</h2>
           <ul className="mt-3 space-y-2 text-sm">
-            {NAV.map((item) => (
+            {[...NAV, ...TOOLS].map((item) => (
               <li key={item.href}>
                 <Link href={item.href} className="text-ink-muted hover:text-accent">
                   {item.label}

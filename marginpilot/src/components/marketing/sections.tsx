@@ -106,7 +106,7 @@ export function HowItWorks() {
 
 function IconCardGrid({ items }: { items: { icon: keyof typeof icons; title: string; body: string }[] }) {
   return (
-    <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
       {items.map((f) => (
         <li key={f.title}>
           <Card className="h-full">
@@ -142,7 +142,7 @@ export function AiToolsSection() {
       title="AI that drafts, and waits for your yes"
       intro="Every AI result appears as a draft you approve. Usage counts against your plan's AI credits."
     >
-      <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {AI_TOOLS.map((t) => (
           <li key={t.title}>
             <Card className="h-full p-5">

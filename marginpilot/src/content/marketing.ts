@@ -47,6 +47,16 @@ export const FEATURES: { icon: IconName; title: string; body: string }[] = [
     body: "Send offers to watchers at a margin you choose, run one sale event per listing, and set promoted listing rates by price tier.",
   },
   {
+    icon: "search",
+    title: "Vetted supplier directory",
+    body: "Wholesale suppliers we've checked for US stock, handling times and eBay-safe sourcing, ready to connect in one click.",
+  },
+  {
+    icon: "layers",
+    title: "Multi-store and team",
+    body: "Run several eBay stores from one login with a store switcher, and give your team their own seats.",
+  },
+  {
     icon: "broom",
     title: "Store cleanup",
     body: "End listings with no views or sales after a set number of days and queue replacements, so the store keeps moving.",
@@ -78,6 +88,11 @@ export const AI_TOOLS: { icon: IconName; title: string; body: string }[] = [
     icon: "image",
     title: "Image cleaner",
     body: "Finds and removes supplier promo banners, coupons and watermarks, and flags images it can't fix cleanly.",
+  },
+  {
+    icon: "image",
+    title: "Photo studio",
+    body: "Snap one product photo and get a listing draft, a clean white background and lifestyle scenes, ready for eBay.",
   },
   {
     icon: "message",

@@ -51,7 +51,7 @@ async function SignupBody({ searchParams }: { searchParams: SearchParams }) {
             </p>
             {sale && (
               <p className="mt-2 font-medium text-ink">
-                {SALE.name}: {SALE.percentOff}% off for as long as you stay subscribed, for sign-ups before December 31.
+                {SALE.name} price locked in for as long as you stay subscribed, for sign-ups before December 31.
               </p>
             )}
           </>

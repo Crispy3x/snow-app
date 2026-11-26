@@ -159,7 +159,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
             {PLANS.map((p) => {
               const current = sub?.plan === p.key;
               const price = priceFor(p.monthly);
-              const discounted = price !== p.monthly;
+              const discounted = price < p.compareAt;
               return (
                 <div key={p.key} className={`flex flex-col rounded-lg border bg-card p-5 ${current ? "border-accent" : "border-line"}`}>
                   <div className="flex items-center justify-between gap-2">
@@ -169,7 +169,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
                   <p className="mt-2">
                     <span className="font-display text-2xl font-semibold">{formatUsd(price)}</span>
                     <span className="text-ink-muted">/mo</span>
-                    {discounted && <span className="ml-2 text-sm text-ink-muted line-through">{formatUsd(p.monthly)}</span>}
+                    {discounted && <span className="ml-2 text-sm text-ink-muted line-through">{formatUsd(p.compareAt)}</span>}
                   </p>
                   <ul className="mt-3 flex-1 space-y-1 text-sm text-ink-muted">
                     <li>{p.limits.stores.toLocaleString()} eBay store{p.limits.stores === 1 ? "" : "s"}</li>

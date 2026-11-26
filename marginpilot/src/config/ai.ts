@@ -28,7 +28,8 @@ export type AiToolKey =
   | "image_cleaner"
   | "buyer_message"
   | "listing_audit"
-  | "store_chat";
+  | "store_chat"
+  | "photo_studio";
 
 /** Credits charged per successful call, and which tier each tool uses. */
 export const AI_TOOLS: Record<AiToolKey, { label: string; tier: ModelTier; bulkTier?: ModelTier; credits: number }> = {
@@ -40,6 +41,7 @@ export const AI_TOOLS: Record<AiToolKey, { label: string; tier: ModelTier; bulkT
   buyer_message: { label: "Buyer message assistant", tier: "standard", credits: 2 },
   listing_audit: { label: "Listing audit", tier: "standard", credits: 5 },
   store_chat: { label: "Store assistant chat", tier: "deep", credits: 3 },
+  photo_studio: { label: "Photo studio", tier: "standard", credits: 3 },
 };
 
 export function estimateCostUsd(model: string, usage: { input: number; output: number; cacheRead?: number }): number {

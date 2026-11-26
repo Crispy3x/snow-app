@@ -1,4 +1,4 @@
-import { PLANS, SALE, formatUsd, salePrice } from "@/config/plans";
+import { PLANS, SALE, formatUsd, salePrice, savingsPct } from "@/config/plans";
 import { saleIsOn } from "@/lib/sale";
 import { LinkButton } from "@/components/ui/button";
 import { Badge, Section } from "@/components/ui/layout";
@@ -15,6 +15,8 @@ const SALE_END_LABEL = new Date(SALE.endsAt).toLocaleString("en-US", {
 
 export async function Pricing() {
   const onSale = await saleIsOn();
+  const pays = (monthly: number) => (onSale ? salePrice(monthly) : monthly);
+  const maxSave = Math.max(...PLANS.map((p) => savingsPct(pays(p.monthly), p.compareAt)));
 
   return (
     <Section
@@ -26,17 +28,18 @@ export async function Pricing() {
       {onSale && (
         <div className="mb-8 flex flex-col gap-1 rounded-lg border-2 border-amber bg-amber-soft p-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="font-display text-lg font-semibold">
-            {SALE.name}: {SALE.percentOff}% off every plan
+            {SALE.name} pricing: save up to {maxSave}%
           </p>
           <p className="text-sm text-ink">
-            Sign up by {SALE_END_LABEL} and keep half price for as long as you stay subscribed.
+            Sign up by {SALE_END_LABEL} and keep this price for as long as you stay subscribed.
           </p>
         </div>
       )}
 
       <ul className="grid gap-6 lg:grid-cols-3">
         {PLANS.map((p) => {
-          const price = onSale ? salePrice(p.monthly) : p.monthly;
+          const price = pays(p.monthly);
+          const save = savingsPct(price, p.compareAt);
           return (
             <li key={p.key}>
               <div
@@ -47,16 +50,16 @@ export async function Pricing() {
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h3 className="text-xl font-semibold">{p.name}</h3>
                   <div className="flex gap-2">
-                    {onSale && <Badge tone="amber">{SALE.percentOff}% off</Badge>}
+                    {save > 0 && <Badge tone="amber">Save {save}%</Badge>}
                     {p.badge && <Badge tone="accent">{p.badge}</Badge>}
                   </div>
                 </div>
 
                 <p className="mt-4 flex flex-wrap items-baseline gap-x-2">
-                  {onSale && (
+                  {save > 0 && (
                     <span className="text-lg text-ink-muted line-through">
-                      <span className="sr-only">Regular price </span>
-                      {formatUsd(p.monthly)}
+                      <span className="sr-only">Was </span>
+                      {formatUsd(p.compareAt)}
                     </span>
                   )}
                   <span className="font-display text-4xl font-semibold">
