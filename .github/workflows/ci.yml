@@ -71,16 +71,22 @@ jobs:
             name="$1"; shift
             xcrun simctl terminate "$UDID" "$BID" 2>/dev/null || true
             xcrun simctl launch "$UDID" "$BID" -uiShot "$name" "$@" >/dev/null
-            sleep 4
+            sleep 3
             xcrun simctl io "$UDID" screenshot "shots/raw.png" >/dev/null 2>&1
             sips -s format jpeg -s formatOptions 72 -Z 1500 shots/raw.png --out "shots/$name${SUFFIX}.jpg" >/dev/null
           }
           SUFFIX=""
-          for s in welcome onboarding home calendar jobs clients requests business profit settings quotes storm visits timeClock team revenue route clientDetail invoices jobEditor; do
+          for s in welcome onboarding tutorial home calendar jobs clients requests menu fieldWork business profit settings profile subscription paywall \
+                   quotes storm visits timeClock proof team revenue assistant route notifications clientDetail invoices invoiceDetail quickInvoice jobEditor jobDetail stormStart addMember; do
             shoot "$s"
           done
+          # Long pages again, half-way down and at the bottom.
+          SUFFIX="-mid"
+          for s in home settings clientDetail profit jobDetail storm visits; do shoot "$s" -uiAnchor 0.5; done
+          SUFFIX="-end"
+          for s in home settings clientDetail profit jobDetail storm visits; do shoot "$s" -uiAnchor 1; done
           SUFFIX="-light"
-          for s in home clientDetail; do shoot "$s" -uiLight YES; done
+          for s in home clientDetail jobs; do shoot "$s" -uiLight YES; done
           rm -f shots/raw.png
           ls -la shots
       - uses: actions/upload-artifact@v4

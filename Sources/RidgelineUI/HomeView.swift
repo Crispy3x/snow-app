@@ -95,6 +95,7 @@ struct HomeView: View {
             .padding(.horizontal, 16).padding(.top, 14)
             .padding(.bottom, Look.tabBarClearance + 40)
         }
+        .defaultScrollAnchor(ScreenshotMode.anchor)
         .sheet(isPresented: $showNewJob) { JobEditorSheet() }
         .sheet(isPresented: $showNewClient) { AddCustomerSheet() }
         .sheet(isPresented: Binding(get: { openedJob != nil }, set: { if !$0 { openedJob = nil } })) {
