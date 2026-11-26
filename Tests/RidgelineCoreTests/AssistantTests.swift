@@ -173,24 +173,31 @@ final class AssistantTests: XCTestCase {
         try d.setJobRepeat(RepeatRule(frequency: .weekly), id: j.id, calendar: utc)
         let id = JSONValue.string(j.id.uuidString)
         let nextWeek = now.addingTimeInterval(7 * 86_400), inTwoWeeks = now.addingTimeInterval(14 * 86_400)
-        // No date means today's visit. The job as a whole and every other visit stay as they were.
-        guard case .text(let done) = run("update_job_status", ["job_id": id, "status": .string("done")], &d) else { return XCTFail() }
+        // Without a date nothing is guessed and nothing changes.
+        XCTAssertEqual(run("update_job_status", ["job_id": id, "status": .string("done")], &d), .error("This job repeats. Give the visit's date."))
+        XCTAssertNil(d.jobs[0].occurrenceStatuses); XCTAssertEqual(d.jobs[0].status, .scheduled)
+        // With the visit's date, only that visit changes. The job as a whole and every other visit stay as they were.
+        guard case .text(let done) = run("update_job_status", ["job_id": id, "status": .string("done"), "date": .string("2027-01-15")], &d) else { return XCTFail() }
         XCTAssertTrue(done.contains("visit"), done)
         XCTAssertEqual(d.jobs[0].status, .scheduled)
         XCTAssertEqual(d.jobs[0].occurrenceStatus(on: now, calendar: utc), .done)
         XCTAssertEqual(d.jobs[0].occurrenceStatus(on: nextWeek, calendar: utc), .scheduled)
-        // Cancelling with a date skips that one visit, not the whole job.
+        // Cancelling skips that one visit, not the whole job.
         guard case .text(let skipped) = run("update_job_status", ["job_id": id, "status": .string("cancelled"), "date": .string("2027-01-22")], &d) else { return XCTFail() }
         XCTAssertTrue(skipped.contains("Skipped"), skipped)
         XCTAssertEqual(d.jobs[0].status, .scheduled)
         XCTAssertEqual(d.jobs[0].occurrenceStatus(on: nextWeek, calendar: utc), .cancelled)
         XCTAssertEqual(d.jobs[0].occurrenceStatus(on: inTwoWeeks, calendar: utc), .scheduled)
         XCTAssertEqual(d.jobs[0].occurrenceStatus(on: now, calendar: utc), .done)
-        // A day with no visit is an error with the next visit named, never a guess.
-        guard case .error(let why) = run("update_job_status", ["job_id": id, "status": .string("done"), "date": .string("2027-01-18")], &d) else { return XCTFail() }
-        XCTAssertTrue(why.contains("no visit"), why)
-        guard case .error = run("update_job_status", ["job_id": id, "status": .string("done"), "date": .string("soon")], &d) else { return XCTFail() }
+        // A day with no visit, or something that is not a date, gets the same plain error.
+        for bad in ["2027-01-18", "soon", " "] {
+            XCTAssertEqual(run("update_job_status", ["job_id": id, "status": .string("done"), "date": .string(bad)], &d), .error("This job repeats. Give the visit's date."), bad)
+        }
         XCTAssertEqual(d.jobs[0].occurrenceStatuses?.count, 2)
+        // A job that happens once needs no date, and a date given anyway is ignored.
+        let once = try d.addJob(title: "Salt", start: now, now: now)
+        guard case .text = run("update_job_status", ["job_id": .string(once.id.uuidString), "status": .string("done"), "date": .string("2030-01-01")], &d) else { return XCTFail() }
+        XCTAssertEqual(d.jobs[1].status, .done)
         // The schedule tells the assistant which jobs repeat, so it knows to give the day.
         guard case .text(let list) = run("get_schedule", ["date": .string("2027-01-29")], &d) else { return XCTFail() }
         XCTAssertTrue(list.contains("(repeats)"), list)

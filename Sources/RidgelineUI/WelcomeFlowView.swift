@@ -106,7 +106,7 @@ struct WelcomeFlowView: View {
             if !homeNote.isEmpty { Text(homeNote).font(.footnote).foregroundStyle(.secondary) }
         case .team:
             Stepper("\(answers.crewCount) crew\(answers.crewCount == 1 ? "" : "s") or truck\(answers.crewCount == 1 ? "" : "s")", value: $answers.crewCount, in: 1...50)
-            Text("Pricing is per crew. Office staff are always free.").font(.footnote).foregroundStyle(.secondary)
+            Text("This sets up your trucks for routes and storms. Employees never pay.").font(.footnote).foregroundStyle(.secondary)
         case .plan:
             PlanChoiceCards(selection: $answers.plan, crews: answers.crewCount)
         case .importClients:
@@ -207,9 +207,9 @@ struct PlanChoiceCards: View {
     var body: some View {
         VStack(spacing: 12) {
             card(.pro, name: "Pro", blurb: "Everything to run a crew: clients, jobs, quotes, invoices, time clock and proof of service.",
-                 points: ["Up to \(TeamRules.employeeLimit(for: .pro)) employees", "Smart route planning", "Client pages and storm messages"])
+                 points: ["Up to \(TeamRules.employeeLimit(for: .pro)) employees", "Route planning with Apple Maps", "Client pages and storm messages"])
             card(.max, name: "Max", blurb: "For bigger operations that want more control.",
-                 points: ["Up to \(TeamRules.employeeLimit(for: .max)) employees", "Roles with custom permissions", "Storm automation and subcontractor tools"])
+                 points: ["Up to \(TeamRules.employeeLimit(for: .max)) employees", "Roles with custom permissions"])
             Text("Free for \(Pricing.trialDays) days with everything unlocked. You pay for the plan. Your employees never pay.")
                 .font(.footnote).foregroundStyle(.secondary)
         }
@@ -222,7 +222,6 @@ struct PlanChoiceCards: View {
                 HStack {
                     Text(name).font(.title3.bold())
                     Spacer()
-                    Text("\(Pricing.monthly(tier, crews: crews).formatted) per month").font(.callout.bold())
                     Image(systemName: chosen ? "checkmark.circle.fill" : "circle").foregroundStyle(chosen ? Color.accentColor : Color.secondary)
                 }
                 Text(blurb).font(.footnote).foregroundStyle(.secondary)

@@ -96,7 +96,7 @@ public enum AssistantTools {
                                             "price": ("number", "What the job costs in dollars, if the person said. Leave out otherwise.")], required: ["title", "start"])), .editJobs),
         (AssistantTool(name: "update_job_status", description: "Change the status of one visit of a job. Get the id and the day from get_schedule. For a job that repeats, only the visit on that day changes (cancelled skips just that visit); every other visit stays as it is.",
                        inputSchema: schema(["job_id": ("string", "The job id"), "status": ("string", "scheduled, inProgress, done or cancelled"),
-                                            "date": ("string", "The day of the visit as YYYY-MM-DD. Leave out for today. Only used for a job that repeats.")], required: ["job_id", "status"])), .logVisits),
+                                            "date": ("string", "The day of the visit as YYYY-MM-DD, as get_schedule shows it. Needed for a job that repeats; not used for other jobs.")], required: ["job_id", "status"])), .logVisits),
         (AssistantTool(name: "list_invoices", description: "List invoices with client, total, balance and due date.",
                        inputSchema: schema(["filter": ("string", "unpaid, overdue, draft or all. Default unpaid.")])), .viewRevenue),
         (AssistantTool(name: "create_invoice", description: "Create a draft invoice for a client's storms that have not been billed yet. It is a draft and is not sent.",
@@ -279,8 +279,10 @@ public enum AssistantTools {
         } catch { return .error("The job could not be created.") }
     }
 
-    /// Changes one visit. A job that repeats is never changed as a whole: only the visit on the given day (today when
-    /// none is given), using the same per-visit code as the Jobs screen.
+    static let repeatsNeedsDate = "This job repeats. Give the visit's date."
+
+    /// Changes one visit. A job that repeats is never changed as a whole: only the visit on the given day, using the
+    /// same per-visit code as the Jobs screen (`setOccurrenceStatus` in RecurringJobs.swift).
     static func updateStatus(_ input: JSONValue, _ data: inout AppData, _ now: Date, _ calendar: Calendar) -> ToolOutcome {
         guard let idText = input["job_id"]?.string, let id = UUID(uuidString: idText.trimmingCharacters(in: .whitespaces)),
               let raw = input["status"]?.string, let status = JobStatus(rawValue: raw) else {
@@ -292,11 +294,11 @@ public enum AssistantTools {
             do { try data.setOccurrenceStatus(status, id: id, on: job.start, calendar: calendar) } catch { return .error("That job was not found.") }
             return .text("Marked \"\(job.title)\" \(status.title.lowercased()).")
         }
+        // A job that repeats is never guessed at: without a day that really has a visit, nothing changes.
         let dateText = (input["date"]?.string ?? "").trimmingCharacters(in: .whitespaces)
-        guard let wanted = Self.day(from: dateText.isEmpty ? nil : dateText, now: now, calendar: calendar) else { return .error("Use a date like 2026-11-20.") }
-        guard let visit = job.occurrenceStart(on: wanted, calendar: calendar) else {
-            let next = job.nextOccurrence(onOrAfter: now, calendar: calendar).map { " Its next visit is \(describe($0, calendar: calendar))." } ?? ""
-            return .error("\"\(job.title)\" repeats and has no visit on \(Job.dayKey(wanted, calendar: calendar)).\(next) Give the date of the visit to change.")
+        guard !dateText.isEmpty, let wanted = Self.day(from: dateText, now: now, calendar: calendar),
+              let visit = job.occurrenceStart(on: wanted, calendar: calendar) else {
+            return .error(repeatsNeedsDate)
         }
         do { try data.setOccurrenceStatus(status, id: id, on: visit, calendar: calendar) } catch { return .error("That visit was not found.") }
         let when = describe(visit, calendar: calendar)

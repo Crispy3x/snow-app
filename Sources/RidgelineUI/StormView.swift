@@ -169,9 +169,6 @@ struct StormView: View {
                         }
                     }
                 }
-                if !model.canUse(.stormAutomation) {
-                    Card { Text("Storm automation (weather-triggered dispatch) is part of the Max plan.").font(.footnote) }
-                }
             }
             .sheet(isPresented: $showingMessage) { StormMessageSheet(inches: inches, routeStart: routeStart, offsets: offsets) }
             .task(id: planKey) {
