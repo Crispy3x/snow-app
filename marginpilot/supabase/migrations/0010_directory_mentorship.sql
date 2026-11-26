@@ -148,7 +148,8 @@ create table if not exists store_audit_requests (
   week_of date not null check (extract(isodow from week_of) = 1),   -- Monday of the ISO week
   seller_notes text check (seller_notes is null or char_length(seller_notes) <= 4000),
   status text not null default 'requested' check (status in ('requested', 'in_review', 'delivered')),
-  feedback text,
+  feedback text,                                     -- delivered feedback, visible to the workspace
+  feedback_draft text,                               -- admin's work in progress, never readable by members
   delivered_at timestamptz,
   delivered_by uuid references auth.users (id) on delete set null,
   created_at timestamptz not null default now(),
@@ -186,6 +187,15 @@ create policy "admin updates audit requests" on store_audit_requests for update
   using (is_admin()) with check (is_admin());
 create policy "admin deletes audit requests" on store_audit_requests for delete
   using (is_admin());
+
+-- Members never see the admin's draft: column-level select grant without feedback_draft.
+revoke select on store_audit_requests from anon, authenticated;
+grant select (id, org_id, store_id, requested_by, week_of, seller_notes, status, feedback, delivered_at, delivered_by,
+              created_at, updated_at)
+  on store_audit_requests to authenticated;
+-- Members may only fill in the request fields; feedback columns are written by admins (service role).
+revoke insert, update on store_audit_requests from anon, authenticated;
+grant insert (org_id, store_id, requested_by, week_of, seller_notes, status) on store_audit_requests to authenticated;
 
 -- Resource files: admin uploads; entitled users get short-lived signed URLs from the server.
 insert into storage.buckets (id, name, public) values ('mentorship-resources', 'mentorship-resources', false)

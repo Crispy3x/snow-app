@@ -199,10 +199,11 @@ export async function saveFeedback(_prev: ActionState, formData: FormData): Prom
   const now = new Date().toISOString();
   const wasDelivered = req.status === "delivered";
 
+  // Drafts live in feedback_draft, which members can't select. Delivering copies it to feedback.
   const update =
     v.intent === "deliver"
-      ? { feedback: v.feedback, status: "delivered", delivered_at: wasDelivered ? undefined : now, delivered_by: admin.id, updated_at: now }
-      : { feedback: v.feedback || null, status: wasDelivered ? "delivered" : "in_review", updated_at: now };
+      ? { feedback: v.feedback, feedback_draft: null, status: "delivered", delivered_at: wasDelivered ? undefined : now, delivered_by: admin.id, updated_at: now }
+      : { feedback_draft: v.feedback || null, status: wasDelivered ? "delivered" : "in_review", updated_at: now };
   const { error } = await db.from("store_audit_requests").update(update).eq("id", v.id);
   if (error) return { ok: false, message: `Couldn't save: ${error.message}` };
   await audit(db, admin.id, v.intent === "deliver" ? "mentorship.audit.deliver" : "mentorship.audit.save", {
@@ -211,7 +212,7 @@ export async function saveFeedback(_prev: ActionState, formData: FormData): Prom
   });
   refresh();
 
-  if (v.intent !== "deliver") return { ok: true, message: wasDelivered ? "Saved. The workspace sees the updated feedback." : "Draft saved. The workspace can't see it until you deliver it." };
+  if (v.intent !== "deliver") return { ok: true, message: wasDelivered ? "Draft saved. The workspace still sees the delivered version until you deliver again." : "Draft saved. The workspace can't see it until you deliver it." };
   if (wasDelivered) return { ok: true, message: "Updated the delivered feedback." };
 
   const org = req.organizations as unknown as { name: string; owner_id: string } | null;

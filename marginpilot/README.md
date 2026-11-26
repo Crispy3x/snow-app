@@ -26,7 +26,7 @@ Import the repo in Vercel and set **Root Directory** to `marginpilot`. Add the e
 ## Going live: setup checklist
 
 1. **Supabase**: create a project, then `supabase link` and `supabase db push` (runs `supabase/migrations/0001`–`0008`). Add `<APP_URL>/auth/callback` to Auth > URL Configuration > Redirect URLs. Sign up once, then set `is_admin = true` on your row in `profiles`.
-2. **Stripe**: products Starter $94/mo, Professional $494/mo, Mentorship $994/mo (and optionally a one-time Course). A coupon: 50% off, duration *forever*, put its id in `STRIPE_COUPON_SALE`. Turn on the Customer Portal. Webhook to `<APP_URL>/api/stripe/webhook` with: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `customer.subscription.created/updated/deleted/paused/resumed`, `invoice.payment_failed`, `charge.refunded`.
+2. **Stripe**: products Starter $94/mo, Professional $494/mo, Mentorship $994/mo (and optionally a one-time Course). A coupon: 50% off, duration *forever*, put its id in `STRIPE_COUPON_SALE`. Turn on the Customer Portal. Webhook to `<APP_URL>/api/stripe/webhook` with: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `customer.subscription.created/updated/deleted/paused/resumed`, `invoice.paid`, `invoice.payment_failed`, `charge.refunded`.
 3. **eBay**: keyset (sandbox first) and a RuName whose accept/decline URLs are `<APP_URL>/api/ebay/callback`. Register the marketplace account deletion endpoint `<APP_URL>/api/ebay/notifications/account-deletion` with your verification token *before* any production call.
 4. **Anthropic**: API key with a spend limit.
 5. **Inngest**: install the Vercel integration (sets the keys); functions are served from `/api/inngest`.
