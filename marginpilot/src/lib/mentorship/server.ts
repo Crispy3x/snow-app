@@ -122,11 +122,11 @@ export type ResourceRow = {
  * Resources with a usable href: the external URL, or a 10-minute signed URL for an
  * uploaded file. Call only after checking the viewer is entitled (or an admin).
  */
-export async function resourcesWithLinks(db: SupabaseClient, rows: ResourceRow[]): Promise<(ResourceRow & { href: string | null })[]> {
+export async function resourcesWithLinks(getDb: () => SupabaseClient, rows: ResourceRow[]): Promise<(ResourceRow & { href: string | null })[]> {
   const paths = rows.map((r) => r.storage_path).filter((p): p is string => !!p);
   const signed = new Map<string, string>();
   if (paths.length) {
-    const { data } = await db.storage.from(MENTORSHIP_BUCKET).createSignedUrls(paths, 600);
+    const { data } = await getDb().storage.from(MENTORSHIP_BUCKET).createSignedUrls(paths, 600);
     for (const d of data ?? []) if (d.path && d.signedUrl) signed.set(d.path, d.signedUrl);
   }
   return rows.map((r) => ({ ...r, href: r.url ?? (r.storage_path ? (signed.get(r.storage_path) ?? null) : null) }));

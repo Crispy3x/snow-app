@@ -21,5 +21,6 @@ describe("plans", () => {
   it("formats whole and fractional dollars", () => {
     expect(formatUsd(47)).toBe("$47");
     expect(formatUsd(23.5)).toBe("$23.50");
+    expect(formatUsd(1497)).toBe("$1,497");
   });
 });

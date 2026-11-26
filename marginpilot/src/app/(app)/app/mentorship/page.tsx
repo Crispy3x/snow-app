@@ -81,7 +81,7 @@ export default async function MentorshipPage() {
   const now = new Date();
   const { upcoming, past, cancelled } = groupSessions((sessionsRes.data ?? []) as SessionRow[], now);
   // Signed links are created with the service role, only after the entitlement check above.
-  const resources = await resourcesWithLinks(createAdminClient(), (resourcesRes.data ?? []) as ResourceRow[]);
+  const resources = await resourcesWithLinks(createAdminClient, (resourcesRes.data ?? []) as ResourceRow[]);
   const audits = (auditsRes.data ?? []) as AuditRow[];
   const win = auditRequestWindow(audits, now);
   const storeLabel = (id: string) => {

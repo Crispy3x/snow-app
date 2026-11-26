@@ -116,7 +116,8 @@ export function salePrice(regular: number, percentOff = SALE.percentOff): number
 }
 
 export function formatUsd(value: number): string {
-  return Number.isInteger(value) ? `$${value}` : `$${value.toFixed(2)}`;
+  const opts = Number.isInteger(value) ? { maximumFractionDigits: 0 } : { minimumFractionDigits: 2, maximumFractionDigits: 2 };
+  return "$" + value.toLocaleString("en-US", opts);
 }
 
 /** Percent saved versus the crossed-out price, rounded down. */

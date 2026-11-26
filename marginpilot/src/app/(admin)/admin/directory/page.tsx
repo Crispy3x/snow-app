@@ -46,7 +46,7 @@ export default async function AdminDirectoryPage({ searchParams }: { searchParam
   const archived = all.filter((r) => r.status === "archived");
   const rows = showArchived ? archived : active;
   const published = active.filter((r) => r.status === "published").length;
-  const now = Date.now();
+  const now = new Date().getTime();
 
   return (
     <>
