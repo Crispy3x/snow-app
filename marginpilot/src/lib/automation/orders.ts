@@ -45,8 +45,8 @@ export type OrderLineRow = {
   listing_id: string | null;
   sku: string | null;
   quantity: number;
-  sale_price: number;
-  supplier_cost: number | null;
+  sale_price: number; // per unit
+  supplier_cost: number | null; // per unit
 };
 
 const DAY = 86_400_000;
@@ -133,7 +133,8 @@ export function mapEbayOrder(
       listing_id: match?.id ?? null,
       sku: li.sku ?? null,
       quantity: li.quantity,
-      sale_price: Number(li.lineItemCost.value),
+      // lineItemCost is the line total; order_lines.sale_price is per unit.
+      sale_price: Math.round((Number(li.lineItemCost.value) / Math.max(1, li.quantity)) * 100) / 100,
       supplier_cost: match?.supplierCost ?? null,
     };
   });

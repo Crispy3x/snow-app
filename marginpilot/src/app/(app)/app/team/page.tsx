@@ -15,6 +15,7 @@ export const metadata = { title: "Team" };
 type Role = "owner" | "admin" | "member";
 const ROLE_TONE: Record<Role, "accent" | "neutral" | "amber"> = { owner: "accent", admin: "neutral", member: "neutral" };
 const ROLE_LABEL: Record<Role, string> = { owner: "Owner", admin: "Admin", member: "Member" };
+const isExpired = (iso: string) => Date.parse(iso) <= Date.now();
 const date = (iso: string) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
 export default async function TeamPage() {
@@ -47,7 +48,6 @@ export default async function TeamPage() {
         .is("accepted_at", null)
         .order("expires_at", { ascending: false })
     : { data: [] };
-  const now = Date.now();
   const invitations = (inviteRows ?? []) as { id: string; email: string; role: Role; expires_at: string }[];
 
   const used = await usage(ctx.org.id);
@@ -126,7 +126,7 @@ export default async function TeamPage() {
               Pending invitations
             </h2>
             {invitations.length === 0 ? (
-              <EmptyState title="No pending invitations">Invitations you send appear here until they're accepted.</EmptyState>
+              <EmptyState title="No pending invitations">Invitations you send appear here until they&rsquo;re accepted.</EmptyState>
             ) : (
               <DataTable caption="Pending invitations">
                 <thead>
@@ -141,7 +141,7 @@ export default async function TeamPage() {
                 </thead>
                 <tbody>
                   {invitations.map((inv) => {
-                    const expired = Date.parse(inv.expires_at) <= now;
+                    const expired = isExpired(inv.expires_at);
                     return (
                       <tr key={inv.id}>
                         <td className={`${td} break-all`}>{inv.email}</td>

@@ -106,7 +106,14 @@ export async function scoreStore(runId: string): Promise<{ orgId: string; storeI
   return { orgId: run.org_id, storeId: run.store_id, userId: run.requested_by, reviewIds: review, total: items.length };
 }
 
-type ItemRow = { id: string; listing_id: string; title: string; score: number; issues: string[]; metrics: AuditScore["metrics"] & { hint: AuditScore["hint"] } };
+type ItemRow = {
+  id: string;
+  listing_id: string;
+  title: string;
+  score: number;
+  issues: string[];
+  metrics: AuditScore["metrics"] & { hint: AuditScore["hint"]; parts: AuditScore["parts"] };
+};
 
 /** One AI call for one batch of listings. Returns an error message when the AI call fails (shown on the run). */
 export async function reviewBatch(runId: string, ctx: { orgId: string; storeId: string; userId: string | null }, listingIds: string[]): Promise<{ analyzed: number; error?: string }> {
@@ -120,10 +127,11 @@ export async function reviewBatch(runId: string, ctx: { orgId: string; storeId: 
   const rows = (data ?? []) as ItemRow[];
   if (!rows.length) return { analyzed: 0 };
 
-  const scores = rows.map((r) => ({
-    title: r.title,
-    score: { listingId: r.listing_id, score: r.score, issues: r.issues, metrics: r.metrics, hint: r.metrics.hint } as AuditScore,
-  }));
+  const scores = rows.map((r) => {
+    const { hint, parts, ...metrics } = r.metrics;
+    const score: AuditScore = { listingId: r.listing_id, score: r.score, issues: r.issues, metrics, hint, parts };
+    return { title: r.title, score };
+  });
 
   const res = await runAi({
     orgId: ctx.orgId,

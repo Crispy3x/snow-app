@@ -75,7 +75,7 @@ describe("mapEbayOrder", () => {
   it("matches lines to listings by SKU and copies supplier cost", () => {
     const { lines } = mapEbayOrder(fixture, { orgId: "org", storeId: "store", handlingDays: 2, now, encrypt: encryptJson, listingsBySku });
     expect(lines).toEqual([
-      { org_id: "org", ebay_line_item_id: "L1", listing_id: "listing-a", sku: "SKU-A", quantity: 2, sale_price: 39.98, supplier_cost: 9.5 },
+      { org_id: "org", ebay_line_item_id: "L1", listing_id: "listing-a", sku: "SKU-A", quantity: 2, sale_price: 19.99, supplier_cost: 9.5 },
       { org_id: "org", ebay_line_item_id: "L2", listing_id: null, sku: "UNKNOWN", quantity: 1, sale_price: 14.99, supplier_cost: null },
     ]);
   });

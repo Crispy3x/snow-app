@@ -19,7 +19,7 @@ export async function choosePlan(_prev: ActionState, formData: FormData): Promis
   return { ok: true, message: `Switching you to ${getPlan(plan)?.name}. Your plan updates here within a few seconds; refresh if it doesn't.` };
 }
 
-export async function openPortal(_prev: ActionState): Promise<ActionState> {
+export async function openPortal(): Promise<ActionState> {
   const ctx = await getAppContext();
   if (!canManage(ctx.role)) return { ok: false, message: "Only the workspace owner or an admin can manage billing." };
   let url: string;

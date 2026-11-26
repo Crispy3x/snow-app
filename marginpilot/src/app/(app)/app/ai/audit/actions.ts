@@ -9,7 +9,7 @@ import { inngest, EVENTS } from "@/lib/inngest/client";
 import { isUuid, setAiDraftStatus } from "@/lib/ai-tools/drafts";
 import type { ActionState } from "@/components/ui/form";
 
-export async function requestAudit(_prev: ActionState): Promise<ActionState> {
+export async function requestAudit(): Promise<ActionState> {
   const ctx = await requireStore();
   const db = createAdminClient();
 

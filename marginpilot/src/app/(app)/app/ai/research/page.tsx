@@ -6,7 +6,7 @@ import { loadStoreRules } from "@/lib/ai-tools/audit-run";
 import { worstCaseAdRate } from "@/lib/ai-tools/pricing";
 import { isUuid } from "@/lib/ai-tools/drafts";
 import type { OwnSalesContext, ResearchStructure } from "@/lib/ai-tools/research";
-import { Alert, EmptyState, PageHeader, Panel, money } from "@/components/ui/app";
+import { Alert, PageHeader, Panel, money } from "@/components/ui/app";
 import { Badge } from "@/components/ui/layout";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { AiCredits, DraftBadge } from "@/components/ai-tools/credits";
@@ -97,6 +97,7 @@ export default async function ResearchPage({ searchParams }: { searchParams: Pro
 
 function RunView({ run, rules }: { run: RunRow; rules: Awaited<ReturnType<typeof loadStoreRules>> }) {
   const s = run.structured;
+  const sources = (run.sources ?? []).filter((x) => /^https?:\/\//i.test(x.url));
   const target = run.target_margin_pct ? Number(run.target_margin_pct) : rules.minNetMarginPct;
   const worst = { ...rules, adRatePct: worstCaseAdRate(rules) };
   const priceAt = (cost: number | null) => (cost == null ? null : priceForMargin(target, { supplierCost: cost }, worst, { charm: true }));
@@ -169,9 +170,9 @@ function RunView({ run, rules }: { run: RunRow; rules: Awaited<ReturnType<typeof
 
         <section>
           <h3 className="font-semibold">Sources</h3>
-          {run.sources.length ? (
+          {sources.length ? (
             <ol className="mt-2 grid list-decimal gap-1 pl-5 text-sm">
-              {run.sources.map((src) => (
+              {sources.map((src) => (
                 <li key={src.url} className="break-words">
                   <a href={src.url} target="_blank" rel="noopener noreferrer nofollow" className="font-medium text-accent underline underline-offset-2 hover:text-accent-strong">
                     {src.title || src.url}
