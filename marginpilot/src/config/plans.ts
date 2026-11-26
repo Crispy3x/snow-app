@@ -71,8 +71,8 @@ export const PLANS: Plan[] = [
       "Up to 15 eBay stores",
       "Up to 20,000 active listings",
       "Everything in Professional",
-      "Group mentorship calls [FREQUENCY]",
-      "Store review with written feedback [FREQUENCY]",
+      "Weekly mentorship calls",
+      "Weekly store audit with written feedback",
       "Priority support",
       "10 team seats",
       "6,000 AI credits a month",
@@ -84,15 +84,20 @@ export const PLANS: Plan[] = [
 /**
  * Current promotion. The sale price is shown only while `now` is between
  * startsAt and endsAt, so it switches itself off without a redeploy.
- * In Stripe this is a coupon (STRIPE_COUPON_SALE) applied at checkout.
+ * In Stripe: a 50%-off coupon (STRIPE_COUPON_SALE) on a subscription schedule phase ending at discountEndsAt.
  */
 export const SALE = {
   name: "Black Friday",
   percentOff: 50,
   startsAt: "2026-11-24T00:00:00Z",
   endsAt: "2026-12-01T07:59:59Z", // end of Cyber Monday, Pacific time
-  /** How long the discount applies once someone subscribes. */
-  durationNote: "[FIRST MONTH / FIRST 3 MONTHS / FOR LIFE]",
+  /**
+   * Subscribers who sign up during the sale pay the sale price on every bill
+   * dated before this moment, then the regular price. Stripe coupons can't end
+   * on a calendar date, so Phase 2 uses a subscription schedule whose discounted
+   * phase ends here.
+   */
+  discountEndsAt: "2027-01-01T08:00:00Z", // midnight Jan 1, Pacific time
 };
 
 export function isSaleActive(now: Date, sale = SALE): boolean {

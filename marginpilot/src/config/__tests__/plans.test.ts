@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { PLANS, formatUsd, isSaleActive, salePrice } from "../plans";
 
-const sale = { name: "T", percentOff: 50, startsAt: "2026-11-24T00:00:00Z", endsAt: "2026-12-01T07:59:59Z", durationNote: "" };
+const sale = { name: "T", percentOff: 50, startsAt: "2026-11-24T00:00:00Z", endsAt: "2026-12-01T07:59:59Z", discountEndsAt: "2027-01-01T08:00:00Z" };
 
 describe("plans", () => {
   it("shows $47 / $247 / $497 at 50% off", () => {

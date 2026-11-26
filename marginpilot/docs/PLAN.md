@@ -102,9 +102,9 @@ Planned for Phase 4 (`ebay_notifications` table).
 | AI credits / month | 300 | 2,000 | 6,000 |
 | Team seats | 1 | 3 | 10 |
 | Course | No | Yes | Yes |
-| Mentorship calls and store reviews | No | No | Yes |
+| Weekly mentorship calls and weekly store audits | No | No | Yes |
 
-The sale shows from 2026-11-24 to the end of Cyber Monday (2026-12-01 07:59 UTC), then switches off by itself.
+The sale shows from 2026-11-24 to the end of Cyber Monday (2026-12-01 07:59 UTC), then switches off by itself. People who sign up during the sale pay half price on every bill until 2027-01-01 (midnight Pacific), then the regular price. Stripe coupons only last a number of months, so Phase 2 uses a subscription schedule with a discounted phase that ends on 2027-01-01.
 
 ## 7. Database schema
 

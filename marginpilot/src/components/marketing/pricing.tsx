@@ -20,6 +20,13 @@ const SALE_END_LABEL = new Date(SALE.endsAt).toLocaleString("en-US", {
   timeZoneName: "short",
 });
 
+const DISCOUNT_END_LABEL = new Date(SALE.discountEndsAt).toLocaleDateString("en-US", {
+  month: "long",
+  day: "numeric",
+  year: "numeric",
+  timeZone: "America/Los_Angeles",
+});
+
 export async function Pricing() {
   const onSale = await saleIsOn();
 
@@ -36,7 +43,7 @@ export async function Pricing() {
             {SALE.name}: {SALE.percentOff}% off every plan
           </p>
           <p className="text-sm text-ink">
-            Ends {SALE_END_LABEL}. Discount applies for {SALE.durationNote}.
+            Sign up by {SALE_END_LABEL}. Half price on every bill until {DISCOUNT_END_LABEL}, then the regular price.
           </p>
         </div>
       )}
