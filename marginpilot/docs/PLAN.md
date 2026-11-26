@@ -104,7 +104,7 @@ Planned for Phase 4 (`ebay_notifications` table).
 | Course | No | Yes | Yes |
 | Weekly mentorship calls and weekly store audits | No | No | Yes |
 
-The sale shows from 2026-11-24 to the end of Cyber Monday (2026-12-01 07:59 UTC), then switches off by itself. People who sign up during the sale pay half price on every bill until 2027-01-01 (midnight Pacific), then the regular price. Stripe coupons only last a number of months, so Phase 2 uses a subscription schedule with a discounted phase that ends on 2027-01-01.
+The sale is open to new sign-ups from 2026-11-24 to the end of December 31 (Pacific), then switches off by itself. People who sign up during the sale keep 50% off for as long as they stay subscribed (Stripe coupon with duration "forever", attached at checkout only while the sale is open).
 
 ## 7. Database schema
 
