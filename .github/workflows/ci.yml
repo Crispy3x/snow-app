@@ -85,6 +85,9 @@ jobs:
           for s in home settings clientDetail profit jobDetail storm visits; do shoot "$s" -uiAnchor 0.5; done
           SUFFIX="-end"
           for s in home settings clientDetail profit jobDetail storm visits; do shoot "$s" -uiAnchor 1; done
+          SUFFIX=""
+          shoot routeMap; shoot routeList
+          SUFFIX="-end"; shoot routeList -uiAnchor 1
           SUFFIX="-light"
           for s in home clientDetail jobs; do shoot "$s" -uiLight YES; done
           rm -f shots/raw.png
