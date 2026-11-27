@@ -4,6 +4,7 @@ import { BRAND } from "@/config/brand";
 import { ADMIN_NAV } from "@/content/app-nav";
 import { Logo } from "@/components/ui/icons";
 import { Sidebar } from "@/components/app/sidebar";
+import { DemoBanner } from "@/components/app/demo-banner";
 import { requireAdmin } from "@/lib/auth";
 
 export const metadata = { title: "Admin" };
@@ -34,6 +35,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </header>
       <main id="admin-main" className="px-4 pb-16 pt-20 sm:px-6 lg:ml-64 lg:px-8">
         <div className="mx-auto max-w-6xl">
+          <DemoBanner />
           <Suspense fallback={<p className="text-ink-muted">Loading…</p>}>
             <AdminGate>{children}</AdminGate>
           </Suspense>

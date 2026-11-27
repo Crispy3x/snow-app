@@ -1,5 +1,7 @@
 import "server-only";
 import { createClient as createSupabaseClient, type SupabaseClient } from "@supabase/supabase-js";
+import { isDemoMode } from "./demo/mode";
+import { createDemoClient } from "./demo/client";
 
 let cached: SupabaseClient | null = null;
 
@@ -8,6 +10,7 @@ let cached: SupabaseClient | null = null;
  * server code that has already authorised the caller. Never import from client code.
  */
 export function createAdminClient(): SupabaseClient {
+  if (isDemoMode()) return createDemoClient();
   if (cached) return cached;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;

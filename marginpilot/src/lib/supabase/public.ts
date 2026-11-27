@@ -1,4 +1,6 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { isDemoMode } from "./demo/mode";
+import { createDemoClient } from "./demo/client";
 
 /**
  * Anonymous, cookie-free Supabase client for public reads (marketing pages).
@@ -6,6 +8,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
  * Returns null when Supabase isn't configured yet, so the marketing site still builds.
  */
 export function createPublicClient(): SupabaseClient | null {
+  if (isDemoMode()) return createDemoClient();
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) return null;

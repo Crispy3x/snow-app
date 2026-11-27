@@ -4,6 +4,7 @@ import { BRAND } from "@/config/brand";
 import { APP_NAV } from "@/content/app-nav";
 import { Logo } from "@/components/ui/icons";
 import { Sidebar } from "@/components/app/sidebar";
+import { DemoBanner } from "@/components/app/demo-banner";
 import { AccountChip, StoreSwitcher } from "@/components/app/store-switcher";
 import { signOut } from "./actions";
 
@@ -48,6 +49,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </header>
       <main id="app-main" className="px-4 pb-16 pt-20 sm:px-6 lg:ml-64 lg:px-8">
         <div className="mx-auto max-w-6xl">
+          <DemoBanner />
           <Suspense fallback={<p className="text-ink-muted">Loading…</p>}>{children}</Suspense>
         </div>
       </main>

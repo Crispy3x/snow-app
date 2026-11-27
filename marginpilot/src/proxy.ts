@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
 import { REF_COOKIE, REF_COOKIE_MAX_AGE, refCookieToSet } from "@/lib/referrals/code";
 import { recordReferralClick } from "@/lib/referrals/click";
+import { isDemoMode } from "@/lib/supabase/demo/mode";
 
 /**
  * Refreshes the Supabase session cookie and keeps signed-out visitors out of
@@ -35,6 +36,7 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
 
 async function sessionResponse(request: NextRequest, path: string): Promise<NextResponse> {
   let response = NextResponse.next({ request });
+  if (isDemoMode()) return response; // demo mode: always signed in as the demo user
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) return response;

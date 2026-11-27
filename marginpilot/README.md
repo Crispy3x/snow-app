@@ -15,6 +15,16 @@ npm test                     # vitest
 npm run build
 ```
 
+### Demo mode (every page, no accounts)
+
+```bash
+npm run demo                              # = MP_DEMO=1 next dev
+# or a production build:
+MP_DEMO=1 npm run build && MP_DEMO=1 npm start
+```
+
+Runs the app on an in-memory fake Supabase (`src/lib/supabase/demo/`) seeded with sample store data, signed in as an admin demo user. Nothing is connected: eBay, Stripe and AI calls fail and pages show their error states. Proof, testimonials, the supplier directory, mentorship and referral earnings stay empty on purpose. Set the cookie `mp_demo_signed_out=1` to see the login/signup pages as a visitor. Demo mode is never on when `VERCEL` is set.
+
 ## Database
 
 Schema and RLS: `supabase/migrations/0001_init.sql`. Apply with the Supabase CLI (`supabase link` then `supabase db push`).

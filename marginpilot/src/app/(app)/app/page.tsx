@@ -183,7 +183,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             <Panel title="Net profit">
               <LineChart title={`Net profit per day, last ${period} days`} data={series.map((d) => ({ label: shortDay(d.day), value: d.net_profit }))} format={(v) => money(v)} />
             </Panel>
-            <Panel title="Orders" className="lg:col-span-2">
+            <Panel title="Orders">
               <BarChart title={`Orders per day, last ${period} days`} data={series.map((d) => ({ label: shortDay(d.day), value: d.orders }))} />
             </Panel>
           </div>
